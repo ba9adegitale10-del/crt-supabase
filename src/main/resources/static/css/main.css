@@ -132,6 +132,9 @@ body{font-family:'Outfit',sans-serif;font-size:14px;line-height:1.6;color:var(--
 }
 .topbar-title{font-family:'Playfair Display',serif;font-size:20px;font-style:italic;color:var(--dark)}
 .topbar-right{display:flex;align-items:center;gap:12px}
+.menu-btn{display:none;}
+.sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:998;cursor:pointer;}
+.sidebar-overlay.open{display:block;}
 .status-pill{
   display:flex;align-items:center;gap:6px;
   padding:5px 12px;border-radius:99px;
