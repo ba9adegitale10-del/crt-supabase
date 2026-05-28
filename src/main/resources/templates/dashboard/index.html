@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+  <meta name="theme-color" content="#CC1A1A"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-title" content="CRT Megrine"/>
+  <link rel="manifest" href="/manifest.json"/>
+  <link rel="apple-touch-icon" href="/icons/icon-apple.png"/>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,700;1,400&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" th:href="@{/css/main.css}"/>
+</head>
+<body>
+<div th:replace="~{fragments/layout :: layout(~{::section#pg},'Tableau de bord','dashboard')}">
+<section id="pg">
+
+  <div th:if="${param.access != null}" class="flash flash-err" style="margin-bottom:16px;">
+    &#128274; Acces refuse — Vous n'avez pas la permission d'acceder a cette section.
+    Contactez votre administrateur.
+  </div>
+  <div class="stats-grid">
+    <div class="stat-card c-red">
+      <div class="stat-ico">&#127968;</div>
+      <div class="stat-val" th:text="${totalFamilies}">0</div>
+      <div class="stat-lbl">Familles</div>
+      <div class="stat-sub"><span th:text="${activeFamilies}+' actives'">0</span></div>
+    </div>
+    <div class="stat-card c-amber">
+      <div class="stat-ico">&#128101;</div>
+      <div class="stat-val" th:text="${totalVolunteers}">0</div>
+      <div class="stat-lbl">Benevoles</div>
+      <div class="stat-sub" style="background:var(--amber-bg);color:var(--amber);"><span th:text="${activeVolunteers}+' actifs'">0</span></div>
+    </div>
+    <div class="stat-card c-green">
+      <div class="stat-ico">&#128144;</div>
+      <div class="stat-val" style="font-size:24px;" th:text="${totalAmount!=null?totalAmount.setScale(0)+' TND':'0 TND'}">0</div>
+      <div class="stat-lbl">Montant collecte</div>
+      <div class="stat-sub">Dons monetaires</div>
+    </div>
+    <div class="stat-card c-blue">
+      <div class="stat-ico">&#128197;</div>
+      <div class="stat-val" th:text="${upcomingEvents}">0</div>
+      <div class="stat-lbl">Evenements a venir</div>
+      <div class="stat-sub" style="background:var(--blue-bg);color:var(--blue);">Planifies</div>
+    </div>
+  </div>
+
+  <div class="two-col">
+    <!-- Prochains evenements -->
+    <div class="card">
+      <div class="card-head">
+        <h3 class="card-title">Prochains evenements</h3>
+        <a href="/events/new" class="btn btn-primary btn-sm">+ Ajouter</a>
+      </div>
+      <div class="card-body">
+        <div th:if="${recentEvents.empty}" class="empty" style="padding:30px;">
+          <div class="empty-ico">&#128197;</div>
+          <div class="empty-title">Aucun evenement prevu</div>
+        </div>
+        <div th:each="e : ${recentEvents}" style="display:flex;align-items:center;gap:14px;padding:12px 20px;border-bottom:1px solid var(--gray-2);">
+          <div style="width:44px;height:44px;border-radius:10px;background:var(--blue-bg);border:1px solid rgba(29,78,216,0.15);display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;">
+            <span style="font-family:'Playfair Display',serif;font-size:16px;color:var(--blue);line-height:1;" th:text="${e.eventDate!=null?e.eventDate.dayOfMonth:'?'}">15</span>
+            <span style="font-size:9px;color:var(--blue);font-weight:700;" th:text="${e.eventDate!=null?#temporals.format(e.eventDate,'MMM',new java.util.Locale('fr')):''}">Jan</span>
+          </div>
+          <div style="flex:1;">
+            <div class="cell-name" th:text="${e.title}">Titre</div>
+            <div class="cell-sub" th:text="${e.responsibleName!=null?'Resp: '+e.responsibleName:e.location?:'—'}">Detail</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Alertes stock + familles recentes -->
+    <div style="display:flex;flex-direction:column;gap:16px;">
+      <div class="card">
+        <div class="card-head">
+          <h3 class="card-title">Stock faible</h3>
+          <a href="/stock" class="btn btn-ghost btn-sm">Voir stock</a>
+        </div>
+        <div class="card-body">
+          <div th:if="${lowStockItems.empty}" style="padding:16px 20px;font-size:13px;color:var(--green);">&#10003; Tous les stocks sont suffisants</div>
+          <div th:each="item : ${lowStockItems}" style="display:flex;align-items:center;justify-content:space-between;padding:10px 20px;border-bottom:1px solid var(--gray-2);">
+            <div class="cell-name" th:text="${item.name}">Article</div>
+            <div style="display:flex;align-items:center;gap:8px;">
+              <span style="font-weight:700;color:var(--red);" th:text="${item.quantity}">0</span>
+              <span class="badge b-red" style="font-size:9px;">FAIBLE</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <h3 class="card-title">Benevoles actifs</h3>
+          <a href="/volunteers" class="btn btn-ghost btn-sm">Voir tous</a>
+        </div>
+        <div class="card-body">
+          <div th:each="v : ${volunteers}" style="display:flex;align-items:center;gap:10px;padding:10px 20px;border-bottom:1px solid var(--gray-2);">
+            <div class="av" style="width:30px;height:30px;font-size:11px;border-radius:7px;" th:text="${#strings.substring(v.firstName,0,1)+#strings.substring(v.lastName,0,1)}">AB</div>
+            <div>
+              <div class="cell-name" th:text="${v.fullName}">Nom</div>
+            </div>
+            <span class="blood" style="margin-left:auto;" th:text="${v.bloodType?:'?'}">A+</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</section>
+</div>
+</body>
+</html>

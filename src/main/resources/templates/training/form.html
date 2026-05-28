@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,700;1,400&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" th:href="@{/css/main.css}"/>
+</head>
+<body>
+<div th:replace="~{fragments/layout :: layout(~{::section#pg},'Ajouter Formation','training')}">
+<section id="pg">
+  <div class="ph">
+    <div><h2 class="ph-title">Nouvelle ressource de formation</h2></div>
+    <a href="/training" class="btn btn-secondary">&#8592; Retour</a>
+  </div>
+  <div class="form-wrap" style="max-width:600px;">
+    <form action="/training/save" method="post">
+      <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+      <div class="form-grid">
+        <div class="fgroup full">
+          <label class="flabel">Titre *</label>
+          <input type="text" name="title" class="finput" placeholder="Ex: Guide Premiers Secours" required maxlength="200"/>
+        </div>
+        <div class="fgroup">
+          <label class="flabel">Type</label>
+          <select name="fileType" class="finput">
+            <option value="PDF">PDF</option>
+            <option value="VIDEO">Video</option>
+            <option value="LINK">Lien web</option>
+          </select>
+        </div>
+        <div class="fgroup">
+          <label class="flabel">Categorie</label>
+          <select name="category" class="finput">
+            <option value="GENERAL">General</option>
+            <option value="PREMIERS_SECOURS">Premiers Secours</option>
+            <option value="FORMATION">Formation</option>
+            <option value="SECURITE">Securite</option>
+            <option value="PROTOCOLE">Protocole</option>
+            <option value="AUTRE">Autre</option>
+          </select>
+        </div>
+        <div class="fgroup full">
+          <label class="flabel">URL / Lien *</label>
+          <input type="url" name="url" class="finput" placeholder="https://..." maxlength="500"/>
+          <span class="fhint">Lien vers le PDF, video ou page web. Doit commencer par https://</span>
+        </div>
+        <div class="fgroup full">
+          <label class="flabel">Description</label>
+          <input type="text" name="description" class="finput" placeholder="Description de la ressource..." maxlength="500"/>
+        </div>
+      </div>
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary">&#10003; Ajouter la ressource</button>
+        <a href="/training" class="btn btn-secondary">Annuler</a>
+      </div>
+    </form>
+  </div>
+</section>
+</div>
+</body>
+</html>

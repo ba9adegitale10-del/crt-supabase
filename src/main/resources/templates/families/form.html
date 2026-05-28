@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+  <meta name="theme-color" content="#CC1A1A"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-title" content="CRT Megrine"/>
+  <link rel="manifest" href="/manifest.json"/>
+  <link rel="apple-touch-icon" href="/icons/icon-apple.png"/>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,700;1,400&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" th:href="@{/css/main.css}"/>
+</head>
+<body>
+<div th:replace="~{fragments/layout :: layout(~{::section#pg},'Famille','families')}">
+<section id="pg">
+  <div class="ph">
+    <div>
+      <h2 class="ph-title">
+        <span th:if="${family.id!=null}">Modifier la famille</span>
+        <span th:if="${family.id==null}">Nouvelle famille</span>
+      </h2>
+      <p class="ph-sub">Informations de la famille beneficiaire</p>
+    </div>
+    <a href="/families" class="btn btn-secondary">&#8592; Retour</a>
+  </div>
+  <div class="form-wrap">
+    <form action="/families/save" method="post">
+      <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+      <input type="hidden" name="id" th:value="${family.id}"/>
+      <div class="form-grid">
+        <div class="fgroup full">
+          <label class="flabel">Nom du chef de famille *</label>
+          <input type="text" name="headName" th:value="${family.headName}" class="finput" placeholder="Ex: Ben Salah Hedi" required/>
+        </div>
+        <div class="fgroup">
+          <label class="flabel">Telephone</label>
+          <input type="text" name="phone" th:value="${family.phone}" class="finput" placeholder="+216 20 000 000"/>
+        </div>
+        <div class="fgroup">
+          <label class="flabel">Numero CIN</label>
+          <input type="text" name="cin" th:value="${family.cin}" class="finput" placeholder="12345678"/>
+        </div>
+        <div class="fgroup">
+          <label class="flabel">Nombre de membres</label>
+          <input type="number" name="membersCount" th:value="${family.membersCount}" class="finput" placeholder="5" min="1"/>
+        </div>
+        <div class="fgroup">
+          <label class="flabel">Situation familiale</label>
+          <input type="text" name="situation" th:value="${family.situation}" class="finput" placeholder="Veuf, Divorce, Marie..."/>
+        </div>
+        <div class="fgroup">
+          <label class="flabel">Categorie *</label>
+          <select name="category" class="finput">
+            <option value="NEEDY"    th:selected="${family.category==null or family.category.name()=='NEEDY'}">Necessiteuse</option>
+            <option value="ORPHAN"   th:selected="${family.category!=null and family.category.name()=='ORPHAN'}">Orphelins</option>
+            <option value="DISABLED" th:selected="${family.category!=null and family.category.name()=='DISABLED'}">Handicapes</option>
+            <option value="ELDERLY"  th:selected="${family.category!=null and family.category.name()=='ELDERLY'}">Personnes agees</option>
+            <option value="REFUGEE"  th:selected="${family.category!=null and family.category.name()=='REFUGEE'}">Refugies</option>
+            <option value="OTHER"    th:selected="${family.category!=null and family.category.name()=='OTHER'}">Autre</option>
+          </select>
+        </div>
+        <div class="fgroup">
+          <label class="flabel">Statut</label>
+          <select name="status" class="finput">
+            <option value="ACTIVE"   th:selected="${family.status==null or family.status.name()=='ACTIVE'}">Active</option>
+            <option value="INACTIVE" th:selected="${family.status!=null and family.status.name()=='INACTIVE'}">Inactive</option>
+            <option value="PENDING"  th:selected="${family.status!=null and family.status.name()=='PENDING'}">En attente</option>
+          </select>
+        </div>
+        <div class="fgroup">
+          <label class="flabel">Date d'enregistrement</label>
+          <input type="date" name="registeredDate" th:value="${family.registeredDate}" class="finput"/>
+        </div>
+        <div class="fgroup full">
+          <label class="flabel">Adresse complete</label>
+          <input type="text" name="address" th:value="${family.address}" class="finput" placeholder="Cite Megrine, Rue..."/>
+        </div>
+        <div class="fgroup full">
+          <label class="flabel">Notes</label>
+          <input type="text" name="notes" th:value="${family.notes}" class="finput" placeholder="Informations supplementaires..."/>
+        </div>
+      </div>
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary">&#10003; Enregistrer</button>
+        <a href="/families" class="btn btn-secondary">Annuler</a>
+      </div>
+    </form>
+  </div>
+</section>
+</div>
+</body>
+</html>

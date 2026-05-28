@@ -1,0 +1,70 @@
+{
+  "name": "CRT Megrine — Croissant-Rouge Tunisien",
+  "short_name": "CRT Megrine",
+  "description": "Système de gestion de la délégation du Croissant-Rouge Tunisien de Megrine",
+  "start_url": "/dashboard",
+  "display": "standalone",
+  "background_color": "#CC1A1A",
+  "theme_color": "#CC1A1A",
+  "orientation": "portrait-primary",
+  "lang": "fr",
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-apple.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Tableau de bord CRT Megrine"
+    }
+  ],
+  "categories": ["productivity", "utilities"],
+  "shortcuts": [
+    {
+      "name": "Familles",
+      "short_name": "Familles",
+      "description": "Gérer les familles bénéficiaires",
+      "url": "/families",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Bénévoles",
+      "short_name": "Bénévoles",
+      "description": "Gérer les bénévoles",
+      "url": "/volunteers",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Stock",
+      "short_name": "Stock",
+      "description": "Gérer le stock",
+      "url": "/stock",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Événements",
+      "short_name": "Événements",
+      "description": "Voir les événements",
+      "url": "/events",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}

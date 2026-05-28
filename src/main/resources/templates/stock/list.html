@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+  <meta name="theme-color" content="#CC1A1A"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-title" content="CRT Megrine"/>
+  <link rel="manifest" href="/manifest.json"/>
+  <link rel="apple-touch-icon" href="/icons/icon-apple.png"/>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,700;1,400&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" th:href="@{/css/main.css}"/>
+</head>
+<body>
+<div th:replace="~{fragments/layout :: layout(~{::section#pg},'Gestion de Stock','stock')}">
+<section id="pg">
+
+  <div th:if="${success}" class="flash flash-ok">
+    <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+    <span th:text="${success}"></span>
+  </div>
+
+  <div class="ph">
+    <div>
+      <h2 class="ph-title">Gestion de Stock</h2>
+      <p class="ph-sub">
+        Matières et fournitures humanitaires
+        <span th:if="${lowStockCount>0}" style="color:var(--red);font-weight:600;" th:text="'— '+${lowStockCount}+' article(s) en stock faible'"></span>
+      </p>
+    </div>
+    <div class="ph-actions">
+      <form th:action="@{/stock}" method="get" class="search-box">
+        <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" name="search" th:value="${search}" class="search-inp" placeholder="Rechercher…"/>
+      </form>
+      <a href="/stock/new" class="btn btn-primary">
+        <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Nouvel article
+      </a>
+    </div>
+  </div>
+
+  <!-- Filtres -->
+  <div class="cat-pills">
+    <a href="/stock" class="cat-pill" th:classappend="${selectedCategory==null}?' active':''">Tous</a>
+    <a th:href="@{/stock(category='FOOD')}"      class="cat-pill" th:classappend="${selectedCategory=='FOOD'}?' active':''">🥫 Alimentaire</a>
+    <a th:href="@{/stock(category='CLOTHES')}"   class="cat-pill" th:classappend="${selectedCategory=='CLOTHES'}?' active':''">👕 Vêtements</a>
+    <a th:href="@{/stock(category='MEDICAL')}"   class="cat-pill" th:classappend="${selectedCategory=='MEDICAL'}?' active':''">💊 Médical</a>
+    <a th:href="@{/stock(category='HYGIENE')}"   class="cat-pill" th:classappend="${selectedCategory=='HYGIENE'}?' active':''">🧴 Hygiène</a>
+    <a th:href="@{/stock(category='EQUIPMENT')}" class="cat-pill" th:classappend="${selectedCategory=='EQUIPMENT'}?' active':''">🛠️ Équipement</a>
+    <a th:href="@{/stock(category='OTHER')}"     class="cat-pill" th:classappend="${selectedCategory=='OTHER'}?' active':''">📦 Autre</a>
+  </div>
+
+  <div class="three-col">
+    <!-- Table -->
+    <div class="card">
+      <table class="tbl">
+        <thead>
+          <tr>
+            <th>Article</th><th>Catégorie</th>
+            <th>Quantité</th><th>Seuil min.</th>
+            <th>Emplacement</th><th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr th:if="${items.empty}">
+            <td colspan="6">
+              <div class="empty"><div class="empty-ico">📦</div><div class="empty-title">Aucun article trouvé</div></div>
+            </td>
+          </tr>
+          <tr th:each="item : ${items}">
+            <td>
+              <div class="cell-name" th:text="${item.name}">Article</div>
+              <div class="cell-sub" th:text="${item.description?:'—'}">Desc</div>
+            </td>
+            <td>
+              <span class="badge"
+                th:classappend="${item.categoryEnum.name()=='FOOD'}?'b-amber':(${item.categoryEnum.name()=='MEDICAL'}?'b-red':(${item.categoryEnum.name()=='CLOTHES'}?'b-blue':'b-gray'))"
+                th:text="${item.categoryEnum}">CAT</span>
+            </td>
+            <td>
+              <div style="display:flex;align-items:baseline;gap:5px;">
+                <span th:class="${item.low}?'qty-low':'qty-ok'" th:text="${item.quantity}">0</span>
+                <span style="font-size:11px;color:var(--ink-30);" th:text="${item.unit?:''}">u.</span>
+              </div>
+              <div th:if="${item.low}" style="margin-top:2px;">
+                <span class="badge b-red" style="font-size:9px;padding:1px 6px;">⚠ FAIBLE</span>
+              </div>
+            </td>
+            <td style="color:var(--ink-50);font-size:13px;" th:text="${item.quantityMin}+' '+(${item.unit}?:'')">0</td>
+            <td style="color:var(--ink-50);font-size:13px;" th:text="${item.location?:'—'}">Lieu</td>
+            <td>
+              <div class="actions">
+                <button class="btn btn-green btn-sm"
+                        th:data-id="${item.id}"
+                        th:data-name="${item.name}"
+                        th:data-unit="${item.unit?:'unité'}"
+                        onclick="openMove(this)">+ / −</button>
+                <a th:href="@{/stock/edit/{id}(id=${item.id})}" class="btn btn-secondary btn-sm btn-icon" title="Modifier">✏️</a>
+                <a th:href="@{/stock/delete/{id}(id=${item.id})}" class="btn btn-danger btn-sm btn-icon"
+                   title="Supprimer" onclick="return confirm('Supprimer cet article ?')">🗑️</a>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Historique -->
+    <div class="card" style="height:fit-content;">
+      <div class="card-head">
+        <h3 class="card-title">Historique récent</h3>
+      </div>
+      <div class="card-body">
+        <div th:if="${recentMovements.empty}" class="empty" style="padding:24px;">
+          <div class="empty-title">Aucun mouvement</div>
+        </div>
+        <div th:each="mv : ${recentMovements}" class="mv-row">
+          <div class="mv-ico" th:class="${mv.type.name()=='IN'}?'mv-ico in':'mv-ico out'"
+               th:text="${mv.type.name()=='IN'}?'↑':'↓'">↑</div>
+          <div class="mv-info">
+            <div class="mv-name" th:text="${mv.stockItem?.name?:'—'}">Article</div>
+            <div class="mv-reason" th:text="${mv.reason?:'—'}">Raison</div>
+          </div>
+          <div class="mv-qty">
+            <div class="mv-qty-val" th:class="${mv.type.name()=='IN'}?'mv-qty-val in':'mv-qty-val out'"
+                 th:text="(${mv.type.name()=='IN'}?'+':'-')+${mv.quantity}">+0</div>
+            <div class="mv-date" th:text="${mv.movedAt!=null?#temporals.format(mv.movedAt,'dd/MM HH:mm'):''}">Date</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Entrée/Sortie -->
+  <div id="moveModal" class="modal-overlay">
+    <div class="modal-box">
+      <h3 class="modal-title">Mouvement de stock</h3>
+      <p class="modal-sub" id="modalItemName">Article</p>
+      <form action="/stock/move" method="post">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+        <input type="hidden" name="itemId" id="modalItemId"/>
+        <div class="type-grid">
+          <button type="button" id="btnIN" class="type-btn sel-in" onclick="selectType('IN')">
+            <div class="type-btn-ico">📥</div>
+            <div class="type-btn-lbl" style="color:var(--green);">Entrée</div>
+          </button>
+          <button type="button" id="btnOUT" class="type-btn" onclick="selectType('OUT')">
+            <div class="type-btn-ico">📤</div>
+            <div class="type-btn-lbl" style="color:var(--ink-50);">Sortie</div>
+          </button>
+        </div>
+        <input type="hidden" name="moveType" id="moveTypeInput" value="IN"/>
+        <div class="fgroup" style="margin-bottom:14px;">
+          <label class="flabel" id="modalQtyLabel">Quantité (unité)</label>
+          <input type="number" name="moveQty" min="1" value="1" class="finput" required/>
+        </div>
+        <div class="fgroup" style="margin-bottom:22px;">
+          <label class="flabel">Raison</label>
+          <input type="text" name="reason" class="finput" placeholder="Distribution, réception de don…"/>
+        </div>
+        <div style="display:flex;gap:10px;">
+          <button type="submit" class="btn btn-primary" style="flex:1;justify-content:center;">✓ Confirmer</button>
+          <button type="button" class="btn btn-secondary" onclick="document.getElementById('moveModal').classList.remove('open')">Annuler</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    function openMove(btn){
+      document.getElementById('modalItemId').value = btn.dataset.id;
+      document.getElementById('modalItemName').textContent = btn.dataset.name;
+      document.getElementById('modalQtyLabel').textContent = 'Quantité (' + btn.dataset.unit + ')';
+      document.getElementById('moveModal').classList.add('open');
+      selectType('IN');
+    }
+    function selectType(t){
+      document.getElementById('moveTypeInput').value = t;
+      const bIn = document.getElementById('btnIN');
+      const bOut = document.getElementById('btnOUT');
+      bIn.className  = 'type-btn' + (t==='IN'  ? ' sel-in'  : '');
+      bOut.className = 'type-btn' + (t==='OUT' ? ' sel-out' : '');
+    }
+    document.getElementById('moveModal').addEventListener('click',function(e){
+      if(e.target===this) this.classList.remove('open');
+    });
+  </script>
+
+</section>
+</div>
+</body>
+</html>
