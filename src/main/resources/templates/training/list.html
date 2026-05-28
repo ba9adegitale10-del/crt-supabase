@@ -1,44 +1,39 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
-<head><meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,700;1,400&display=swap" rel="stylesheet"/>
+<head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" th:href="@{/css/main.css}"/>
 </head>
 <body>
-<div th:replace="~{fragments/layout :: layout(~{::section#pg},'Formations et Ressources','training')}">
+<div th:replace="~{fragments/layout :: layout(~{::section#pg},'Formations','training')}">
 <section id="pg">
-
-  <div th:if="${success}" class="flash flash-ok">&#10003; <span th:text="${success}"></span></div>
-
+  <div th:if="${success}" class="flash flash-ok">✓ <span th:text="${success}"></span></div>
   <div class="ph">
-    <div><h2 class="ph-title">&#128218; Espace Apprentissage</h2><p class="ph-sub">Guides, formations et ressources pour les benevoles</p></div>
-    <a href="/training/new" class="btn btn-primary" sec:authorize="hasRole('ADMIN')">+ Ajouter une ressource</a>
+    <div><h2 class="ph-title">Ressources de formation</h2><p class="ph-sub">Guides, protocoles et ressources pour les bénévoles</p></div>
+    <a href="/training/new" class="btn btn-primary" sec:authorize="hasRole('ADMIN')">+ Ajouter</a>
   </div>
-
   <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;">
-    <div th:if="${resources.empty}" style="grid-column:1/-1;">
-      <div class="card"><div class="empty"><div class="empty-ico">&#128218;</div><div class="empty-title">Aucune formation disponible</div></div></div>
+    <div th:if="${resources==null or resources.empty}" style="grid-column:1/-1;">
+      <div class="card"><div class="empty"><div class="empty-ico">📚</div><div class="empty-title">Aucune ressource disponible</div></div></div>
     </div>
-    <div th:each="r : ${resources}" class="card" style="overflow:visible;">
-      <div style="padding:20px;">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;">
-          <span class="badge b-blue" th:text="${r.category}">CAT</span>
-          <span class="badge b-gray" th:text="${r.fileType}">TYPE</span>
-        </div>
-        <h3 style="font-family:'Playfair Display',serif;font-size:17px;font-style:italic;color:var(--dark);margin-bottom:8px;" th:text="${r.title}">Titre</h3>
-        <p style="font-size:13px;color:var(--gray-4);margin-bottom:16px;line-height:1.5;" th:text="${r.description?:' '}">Desc</p>
-        <div style="display:flex;justify-content:space-between;align-items:center;">
-          <span style="font-size:11px;color:var(--gray-4);" th:text="'Par '+${r.uploadedBy}+' — '+${r.uploadedAt!=null?#temporals.format(r.uploadedAt,'dd/MM/yyyy'):'—'}">Info</span>
-          <div style="display:flex;gap:6px;">
-            <a th:if="${r.url!=null}" th:href="${r.url}" target="_blank" class="btn btn-primary btn-sm">&#128279; Ouvrir</a>
-            <a th:href="@{/training/delete/{id}(id=${r.id})}" class="btn btn-danger btn-sm btn-icon" sec:authorize="hasRole('ADMIN')" onclick="return confirm('Supprimer ?')">&#128465;</a>
-          </div>
+    <div th:each="r : ${resources}" class="card" style="display:flex;flex-direction:column;gap:12px;">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;">
+        <span class="badge b-blue" th:text="${r.resourceType?:'PDF'}">PDF</span>
+        <span th:if="${r.active}" class="badge b-green">Actif</span>
+      </div>
+      <div>
+        <div class="cell-name" style="font-size:14px;" th:text="${r.title}">Titre</div>
+        <div class="cell-sub" style="margin-top:6px;line-height:1.5;" th:text="${r.description?:'—'}">Description</div>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-top:auto;">
+        <span style="font-size:11px;color:var(--text-3);" th:text="${r.addedBy!=null?'Par '+r.addedBy:''}">auteur</span>
+        <div class="actions">
+          <a th:if="${r.url!=null}" th:href="${r.url}" target="_blank" class="btn btn-secondary btn-sm">🔗 Ouvrir</a>
+          <a th:href="@{/training/delete/{id}(id=${r.id})}" class="btn btn-danger btn-sm btn-icon" sec:authorize="hasRole('ADMIN')" onclick="return confirm('Supprimer ?')">🗑️</a>
         </div>
       </div>
     </div>
   </div>
-
 </section>
 </div>
 </body>

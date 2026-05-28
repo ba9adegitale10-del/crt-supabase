@@ -1,138 +1,39 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head><meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
-  <meta name="theme-color" content="#CC1A1A"/>
-  <meta name="apple-mobile-web-app-capable" content="yes"/>
-  <meta name="apple-mobile-web-app-title" content="CRT Megrine"/>
-  <link rel="manifest" href="/manifest.json"/>
-  <link rel="apple-touch-icon" href="/icons/icon-apple.png"/>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,700;1,400&display=swap" rel="stylesheet"/>
+<head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" th:href="@{/css/main.css}"/>
 </head>
 <body>
 <div th:replace="~{fragments/layout :: layout(~{::section#pg},'Base de données','database')}">
 <section id="pg">
-  <div class="ph">
-    <div>
-      <h2 class="ph-title">Base de données</h2>
-      <p class="ph-sub" style="color:var(--red);">🔒 Accès administrateur uniquement</p>
-    </div>
-    <div style="display:flex;align-items:center;gap:8px;padding:10px 16px;background:var(--green-bg);border:1px solid rgba(22,163,74,0.2);border-radius:10px;">
-      <span>🗄️</span>
-      <div>
-        <div style="font-size:12px;font-weight:700;color:var(--green);">Base connectée</div>
-        <div style="font-size:11px;color:var(--ink-50);">crt_megrine @ localhost</div>
-      </div>
-    </div>
+  <div class="ph"><div><h2 class="ph-title">Base de données</h2><p class="ph-sub">Vue en lecture seule des tables Supabase</p></div></div>
+  <div class="db-table-selector">
+    <a href="/database?table=users" class="db-table-btn" th:classappend="${selectedTable=='users'}?' active':''">👤 Utilisateurs</a>
+    <a href="/database?table=volunteers" class="db-table-btn" th:classappend="${selectedTable=='volunteers'}?' active':''">👥 Bénévoles</a>
+    <a href="/database?table=families" class="db-table-btn" th:classappend="${selectedTable=='families'}?' active':''">🏠 Familles</a>
+    <a href="/database?table=donations" class="db-table-btn" th:classappend="${selectedTable=='donations'}?' active':''">❤️ Dons</a>
+    <a href="/database?table=stock_items" class="db-table-btn" th:classappend="${selectedTable=='stock_items'}?' active':''">📦 Stock</a>
+    <a href="/database?table=events" class="db-table-btn" th:classappend="${selectedTable=='events'}?' active':''">📅 Événements</a>
+    <a href="/database?table=activity_logs" class="db-table-btn" th:classappend="${selectedTable=='activity_logs'}?' active':''">📋 Logs</a>
   </div>
-
-  <div class="stats-grid" style="margin-bottom:28px;">
-    <div class="stat-card c-red"><div class="stat-ico">👤</div><div class="stat-val" th:text="${stats[0]}">0</div><div class="stat-lbl">Utilisateurs</div></div>
-    <div class="stat-card c-amber"><div class="stat-ico">👥</div><div class="stat-val" th:text="${stats[1]}">0</div><div class="stat-lbl">Bénévoles</div></div>
-    <div class="stat-card c-green"><div class="stat-ico">❤️</div><div class="stat-val" th:text="${stats[2]}">0</div><div class="stat-lbl">Dons</div></div>
-    <div class="stat-card c-blue"><div class="stat-ico">📦</div><div class="stat-val" th:text="${stats[3]}">0</div><div class="stat-lbl">Articles stock</div></div>
-  </div>
-
-  <div class="db-tabs">
-    <button class="db-tab active" onclick="showTab('users',this)">👤 Utilisateurs</button>
-    <button class="db-tab" onclick="showTab('volunteers',this)">👥 Bénévoles</button>
-    <button class="db-tab" onclick="showTab('donations',this)">❤️ Dons</button>
-    <button class="db-tab" onclick="showTab('stock',this)">📦 Stock</button>
-    <button class="db-tab" onclick="showTab('movements',this)">🔄 Mouvements</button>
-  </div>
-
-  <div id="tab-users" class="db-panel active card">
-    <table class="tbl">
-      <thead><tr><th>ID</th><th>Username</th><th>Nom complet</th><th>Email</th><th>Rôle</th><th>Actif</th></tr></thead>
+  <div class="card" style="overflow-x:auto;" th:if="${rows!=null}">
+    <div class="card-head"><div class="card-title" th:text="'Table: '+${selectedTable?:'—'}">Table</div><span style="font-size:12px;color:var(--text-3);" th:text="${rows.size()}+' lignes'">0</span></div>
+    <table class="tbl" th:if="${!rows.empty}">
+      <thead>
+        <tr><th th:each="col : ${columns}" th:text="${col}">Col</th></tr>
+      </thead>
       <tbody>
-        <tr th:each="u : ${users}">
-          <td style="color:var(--ink-30);font-size:12px;" th:text="${u.id}">1</td>
-          <td><strong th:text="${u.username}">admin</strong></td>
-          <td th:text="${u.fullName?:'—'}">Nom</td>
-          <td th:text="${u.email?:'—'}">email</td>
-          <td><span class="badge" th:classappend="${u.role=='ROLE_ADMIN'}?'b-red':'b-green'" th:text="${u.role}">ROLE</span></td>
-          <td><span class="badge" th:classappend="${u.enabled}?'b-green':'b-gray'" th:text="${u.enabled?'Oui':'Non'}">Oui</span></td>
+        <tr th:each="row : ${rows}">
+          <td th:each="col : ${columns}" style="font-size:11px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" th:text="${row[col]}">—</td>
         </tr>
       </tbody>
     </table>
+    <div th:if="${rows.empty}" class="empty"><div class="empty-ico">📋</div><div class="empty-title">Table vide</div></div>
   </div>
-
-  <div id="tab-volunteers" class="db-panel card">
-    <table class="tbl">
-      <thead><tr><th>ID</th><th>Nom</th><th>Email</th><th>Téléphone</th><th>Groupe</th><th>Adhésion</th><th>Statut</th></tr></thead>
-      <tbody>
-        <tr th:each="v : ${volunteers}">
-          <td style="color:var(--ink-30);font-size:12px;" th:text="${v.id}">1</td>
-          <td class="cell-name" th:text="${v.fullName}">Nom</td>
-          <td style="font-size:13px;" th:text="${v.email?:'—'}">email</td>
-          <td style="font-size:13px;" th:text="${v.phone?:'—'}">tel</td>
-          <td><span class="blood" th:text="${v.bloodType?:'?'}">A+</span></td>
-          <td style="font-size:12px;color:var(--ink-50);" th:text="${v.joinDate?:'—'}">Date</td>
-          <td><span class="badge" th:classappend="${v.status.name()=='ACTIVE'}?'b-green':(${v.status.name()=='PENDING'}?'b-amber':'b-gray')" th:text="${v.status}">S</span></td>
-        </tr>
-      </tbody>
-    </table>
+  <div class="card" th:if="${rows==null}">
+    <div class="empty"><div class="empty-ico">🗄️</div><div class="empty-title">Sélectionnez une table ci-dessus</div></div>
   </div>
-
-  <div id="tab-donations" class="db-panel card">
-    <table class="tbl">
-      <thead><tr><th>ID</th><th>Donateur</th><th>Type</th><th>Montant</th><th>Date</th><th>Statut</th></tr></thead>
-      <tbody>
-        <tr th:each="d : ${donations}">
-          <td style="color:var(--ink-30);font-size:12px;" th:text="${d.id}">1</td>
-          <td th:text="${d.donorName?:'Anonyme'}">D</td>
-          <td><span class="badge b-amber" th:text="${d.type}">T</span></td>
-          <td style="font-family:'Playfair Display',serif;" th:text="${d.amount}+' TND'">0</td>
-          <td style="font-size:12px;color:var(--ink-50);" th:text="${d.donationDate?:'—'}">Date</td>
-          <td><span class="badge" th:classappend="${d.status.name()=='RECEIVED'}?'b-green':'b-blue'" th:text="${d.status}">S</span></td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-
-  <div id="tab-stock" class="db-panel card">
-    <table class="tbl">
-      <thead><tr><th>ID</th><th>Article</th><th>Catégorie</th><th>Quantité</th><th>Unité</th><th>Min</th><th>Emplacement</th></tr></thead>
-      <tbody>
-        <tr th:each="s : ${stockItems}">
-          <td style="color:var(--ink-30);font-size:12px;" th:text="${s.id}">1</td>
-          <td class="cell-name" th:text="${s.name}">Art</td>
-          <td><span class="badge b-gray" th:text="${s.categoryEnum}">C</span></td>
-          <td th:style="${s.low}?'color:var(--red);font-weight:700;':'color:var(--green);font-weight:700;'" th:text="${s.quantity}">0</td>
-          <td style="font-size:12px;color:var(--ink-50);" th:text="${s.unit?:'—'}">u.</td>
-          <td th:text="${s.quantityMin}">0</td>
-          <td style="font-size:12px;color:var(--ink-50);" th:text="${s.location?:'—'}">Lieu</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-
-  <div id="tab-movements" class="db-panel card">
-    <table class="tbl">
-      <thead><tr><th>ID</th><th>Article</th><th>Type</th><th>Quantité</th><th>Raison</th><th>Par</th><th>Date</th></tr></thead>
-      <tbody>
-        <tr th:each="m : ${movements}">
-          <td style="color:var(--ink-30);font-size:12px;" th:text="${m.id}">1</td>
-          <td th:text="${m.stockItem?.name?:'—'}">Art</td>
-          <td><span class="badge" th:classappend="${m.type.name()=='IN'}?'b-green':'b-red'" th:text="${m.type}">IN</span></td>
-          <td style="font-weight:700;" th:text="${m.quantity}">0</td>
-          <td style="font-size:12px;color:var(--ink-50);" th:text="${m.reason?:'—'}">R</td>
-          <td style="font-size:12px;" th:text="${m.performedBy?:'—'}">P</td>
-          <td style="font-size:12px;color:var(--ink-50);" th:text="${m.movedAt?:'—'}">D</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-
-  <script>
-    function showTab(name,btn){
-      document.querySelectorAll('.db-panel').forEach(p=>p.classList.remove('active'));
-      document.querySelectorAll('.db-tab').forEach(b=>b.classList.remove('active'));
-      document.getElementById('tab-'+name).classList.add('active');
-      btn.classList.add('active');
-    }
-  </script>
 </section>
 </div>
 </body>

@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import java.util.List;
 
 public interface ActivityLogRepository extends JpaRepository<ActivityLog, Long> {
+
     List<ActivityLog> findTop100ByOrderByCreatedAtDesc();
     List<ActivityLog> findByUsernameOrderByCreatedAtDesc(String username);
     List<ActivityLog> findByEntityTypeOrderByCreatedAtDesc(String entityType);

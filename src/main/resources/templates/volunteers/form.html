@@ -1,91 +1,54 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head><meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <meta name="theme-color" content="#CC1A1A"/>
-  <link rel="manifest" href="/manifest.json"/>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,700;1,400&display=swap" rel="stylesheet"/>
+<head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" th:href="@{/css/main.css}"/>
 </head>
 <body>
 <div th:replace="~{fragments/layout :: layout(~{::section#pg},'Bénévole','volunteers')}">
 <section id="pg">
   <div class="ph">
-    <div>
-      <h2 class="ph-title">
-        <span th:if="${volunteer.id != null}">Modifier le benevole</span>
-        <span th:if="${volunteer.id == null}">Nouveau benevole</span>
-      </h2>
-      <p class="ph-sub">Informations du benevole</p>
-    </div>
+    <div><h2 class="ph-title" th:text="${volunteer.id!=null?'Modifier bénévole':'Nouveau bénévole'}">Bénévole</h2></div>
     <a href="/volunteers" class="btn btn-secondary">← Retour</a>
   </div>
   <div class="form-wrap">
-    <form action="/volunteers/save" method="post">
-      <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+    <form th:action="@{/volunteers/save}" method="post">
       <input type="hidden" name="id" th:value="${volunteer.id}"/>
       <div class="form-grid">
-        <div class="fgroup">
-          <label class="flabel">Prénom *</label>
-          <input type="text" name="firstName" th:value="${volunteer.firstName}" class="finput" placeholder="Ahmed" required/>
-        </div>
-        <div class="fgroup">
-          <label class="flabel">Nom *</label>
-          <input type="text" name="lastName" th:value="${volunteer.lastName}" class="finput" placeholder="Ben Ali" required/>
-        </div>
-        <div class="fgroup">
-          <label class="flabel">Email</label>
-          <input type="email" name="email" th:value="${volunteer.email}" class="finput" placeholder="ahmed@email.com"/>
-        </div>
-        <div class="fgroup">
-          <label class="flabel">Téléphone</label>
-          <input type="text" name="phone" th:value="${volunteer.phone}" class="finput" placeholder="+216 20 000 000"/>
-        </div>
-        <!-- CIN AJOUTE ICI -->
-        <div class="fgroup">
-          <label class="flabel">Numéro CIN</label>
-          <input type="text" name="cin" th:value="${volunteer.cin}" class="finput" placeholder="12345678"/>
-        </div>
-        <div class="fgroup">
-          <label class="flabel">Groupe sanguin</label>
+        <div class="form-group"><label>Prénom *</label><input type="text" name="firstName" class="finput" th:value="${volunteer.firstName}" required/></div>
+        <div class="form-group"><label>Nom *</label><input type="text" name="lastName" class="finput" th:value="${volunteer.lastName}" required/></div>
+        <div class="form-group"><label>Email</label><input type="email" name="email" class="finput" th:value="${volunteer.email}"/></div>
+        <div class="form-group"><label>Téléphone</label><input type="text" name="phone" class="finput" th:value="${volunteer.phone}"/></div>
+        <div class="form-group"><label>Groupe sanguin</label>
           <select name="bloodType" class="finput">
-            <option value="">Sélectionner…</option>
-            <option value="A+"  th:selected="${volunteer.bloodType=='A+'}">A+</option>
-            <option value="A-"  th:selected="${volunteer.bloodType=='A-'}">A-</option>
-            <option value="B+"  th:selected="${volunteer.bloodType=='B+'}">B+</option>
-            <option value="B-"  th:selected="${volunteer.bloodType=='B-'}">B-</option>
-            <option value="AB+" th:selected="${volunteer.bloodType=='AB+'}">AB+</option>
-            <option value="AB-" th:selected="${volunteer.bloodType=='AB-'}">AB-</option>
-            <option value="O+"  th:selected="${volunteer.bloodType=='O+'}">O+</option>
-            <option value="O-"  th:selected="${volunteer.bloodType=='O-'}">O-</option>
+            <option value="">— Choisir —</option>
+            <option th:each="bt : ${ {'A+','A-','B+','B-','AB+','AB-','O+','O-'} }" th:value="${bt}" th:text="${bt}" th:selected="${volunteer.bloodType==bt}"></option>
           </select>
         </div>
-        <div class="fgroup">
-          <label class="flabel">Date d'adhésion</label>
-          <input type="date" name="joinDate" th:value="${volunteer.joinDate}" class="finput"/>
-        </div>
-        <div class="fgroup full">
-          <label class="flabel">Adresse</label>
-          <input type="text" name="address" th:value="${volunteer.address}" class="finput" placeholder="Megrine, Ben Arous"/>
-        </div>
-        <div class="fgroup">
-          <label class="flabel">Statut</label>
-          <select name="status" class="finput">
-            <option value="ACTIVE"   th:selected="${volunteer.status==null or volunteer.status.name()=='ACTIVE'}">Actif</option>
-            <option value="INACTIVE" th:selected="${volunteer.status!=null and volunteer.status.name()=='INACTIVE'}">Inactif</option>
-            <option value="PENDING"  th:selected="${volunteer.status!=null and volunteer.status.name()=='PENDING'}">En attente</option>
-          </select>
-        </div>
-        <div class="fgroup" style="display:flex;align-items:flex-end;padding-bottom:4px;">
-          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:14px;color:var(--ink-70);">
-            <input type="checkbox" name="active" value="true" th:checked="${volunteer.active}" style="width:16px;height:16px;accent-color:var(--red);"/>
-            Bénévole actif
-          </label>
+        <div class="form-group"><label>Adresse</label><input type="text" name="address" class="finput" th:value="${volunteer.address}"/></div>
+        <div class="form-group"><label>Date d'adhésion</label><input type="date" name="joinDate" class="finput" th:value="${volunteer.joinDate}"/></div>
+        <div class="form-group"><label>Heures totales</label><input type="number" name="totalHours" class="finput" th:value="${volunteer.totalHours?:0}" min="0"/></div>
+      </div>
+      <div class="form-group" style="margin-top:12px;">
+        <label>Disponibilités</label>
+        <div class="check-group">
+          <label class="check-item"><input type="checkbox" name="availability" value="MATIN" th:checked="${volunteer.availability!=null and volunteer.availability.contains('MATIN')}"/> 🌅 Matin</label>
+          <label class="check-item"><input type="checkbox" name="availability" value="APRES-MIDI" th:checked="${volunteer.availability!=null and volunteer.availability.contains('APRES-MIDI')}"/> ☀️ Après-midi</label>
+          <label class="check-item"><input type="checkbox" name="availability" value="SOIREE" th:checked="${volunteer.availability!=null and volunteer.availability.contains('SOIREE')}"/> 🌙 Soirée</label>
+          <label class="check-item"><input type="checkbox" name="availability" value="WEEKEND" th:checked="${volunteer.availability!=null and volunteer.availability.contains('WEEKEND')}"/> 📅 Week-end</label>
         </div>
       </div>
+      <div class="form-group" style="margin-top:12px;">
+        <label>Statut</label>
+        <div class="check-group">
+          <label class="check-item"><input type="radio" name="active" value="true" th:checked="${volunteer.active}"/> ✅ Actif</label>
+          <label class="check-item"><input type="radio" name="active" value="false" th:checked="${!volunteer.active}"/> ⏸ Inactif</label>
+        </div>
+      </div>
+      <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
       <div class="form-actions">
-        <button type="submit" class="btn btn-primary">✓ Enregistrer</button>
         <a href="/volunteers" class="btn btn-secondary">Annuler</a>
+        <button type="submit" class="btn btn-primary">💾 Enregistrer</button>
       </div>
     </form>
   </div>

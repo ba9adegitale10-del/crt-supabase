@@ -1,129 +1,49 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head><meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
-  <meta name="theme-color" content="#CC1A1A"/>
-  <meta name="apple-mobile-web-app-capable" content="yes"/>
-  <meta name="apple-mobile-web-app-title" content="CRT Megrine"/>
-  <link rel="manifest" href="/manifest.json"/>
-  <link rel="apple-touch-icon" href="/icons/icon-apple.png"/>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,700;1,400&display=swap" rel="stylesheet"/>
+<head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" th:href="@{/css/main.css}"/>
 </head>
 <body>
-<div th:replace="~{fragments/layout :: layout(~{::section#pg},'Evenements et Actions','events')}">
+<div th:replace="~{fragments/layout :: layout(~{::section#pg},'Événements','events')}">
 <section id="pg">
-
-  <div th:if="${success}" class="flash flash-ok">&#10003; <span th:text="${success}"></span></div>
-
-  <!-- Stats -->
-  <div class="stats-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:24px;">
-    <div class="stat-card c-blue">
-      <div class="stat-ico">&#128197;</div>
-      <div class="stat-val" th:text="${upcomingCount}">0</div>
-      <div class="stat-lbl">Evenements a venir</div>
-    </div>
-    <div class="stat-card c-green">
-      <div class="stat-ico">&#10003;</div>
-      <div class="stat-val" th:text="${completedCount}">0</div>
-      <div class="stat-lbl">Evenements termines</div>
-    </div>
-    <div class="stat-card c-red">
-      <div class="stat-ico">&#128101;</div>
-      <div class="stat-val" th:text="${events.size()}">0</div>
-      <div class="stat-lbl">Total actions</div>
-    </div>
-  </div>
-
+  <div th:if="${success}" class="flash flash-ok">✓ <span th:text="${success}"></span></div>
   <div class="ph">
-    <div>
-      <h2 class="ph-title">Evenements et Actions</h2>
-      <p class="ph-sub">Planification et suivi des activites humanitaires</p>
-    </div>
-    <a href="/events/new" class="btn btn-primary">+ Nouvel evenement</a>
+    <div><h2 class="ph-title">Événements</h2></div>
+    <a href="/events/new" class="btn btn-primary">+ Nouvel événement</a>
   </div>
-
-  <!-- Liste evenements -->
-  <div style="display:flex;flex-direction:column;gap:16px;">
-    <div th:if="${events.empty}" class="card">
-      <div class="empty"><div class="empty-ico">&#128197;</div><div class="empty-title">Aucun evenement enregistre</div></div>
+  <div class="cat-pills">
+    <a href="/events" class="cat-pill active">Tous</a>
+    <a href="/events?status=PLANNED" class="cat-pill">📅 Planifiés</a>
+    <a href="/events?status=ONGOING" class="cat-pill">🟢 En cours</a>
+    <a href="/events?status=COMPLETED" class="cat-pill">✅ Terminés</a>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:12px;">
+    <div th:if="${events==null or events.empty}">
+      <div class="card"><div class="empty"><div class="empty-ico">📅</div><div class="empty-title">Aucun événement</div></div></div>
     </div>
-
-    <div th:each="e : ${events}" class="card" style="overflow:visible;">
-      <div style="display:flex;gap:0;">
-
-        <!-- Bande date -->
-        <div style="width:80px;flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px 10px;border-right:1px solid var(--gray-2);"
-             th:style="${e.status.name()=='UPCOMING'}?'background:var(--blue-bg);border-right:1px solid var(--gray-2);':(${e.status.name()=='COMPLETED'}?'background:var(--green-bg);border-right:1px solid var(--gray-2);':'background:var(--gray-1);border-right:1px solid var(--gray-2);')">
-          <div style="font-family:'Playfair Display',serif;font-size:28px;line-height:1;"
-               th:style="${e.status.name()=='UPCOMING'}?'color:var(--blue);':(${e.status.name()=='COMPLETED'}?'color:var(--green);':'color:var(--gray-4);')"
-               th:text="${e.eventDate!=null?e.eventDate.dayOfMonth:'?'}">15</div>
-          <div style="font-size:10px;font-weight:700;text-transform:uppercase;"
-               th:style="${e.status.name()=='UPCOMING'}?'color:var(--blue);':(${e.status.name()=='COMPLETED'}?'color:var(--green);':'color:var(--gray-4);')"
-               th:text="${e.eventDate!=null?#temporals.format(e.eventDate,'MMM',new java.util.Locale('fr')):'—'}">Jan</div>
-          <div style="font-size:10px;color:var(--gray-4);"
-               th:text="${e.eventDate!=null?e.eventDate.year:''}">2026</div>
+    <div th:each="ev : ${events}" class="card" style="display:flex;gap:16px;align-items:flex-start;">
+      <div style="min-width:54px;width:54px;border-radius:var(--radius-xs);background:var(--red-pale);border:1px solid rgba(232,25,44,0.2);text-align:center;padding:8px 4px;">
+        <div style="font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:var(--red-2);line-height:1;" th:text="${ev.eventDate!=null?#temporals.day(ev.eventDate):'?'}">1</div>
+        <div style="font-size:9px;text-transform:uppercase;color:var(--text-3);margin-top:2px;letter-spacing:.06em;" th:text="${ev.eventDate!=null?#temporals.monthName(ev.eventDate).substring(0,3):'?'}">Jan</div>
+      </div>
+      <div style="flex:1;">
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+          <div class="cell-name" style="font-size:15px;" th:text="${ev.title}">Titre</div>
+          <span class="badge"
+            th:classappend="${ev.status!=null and ev.status.name()=='PLANNED'}?'b-blue':(${ev.status!=null and ev.status.name()=='ONGOING'}?'b-green':'b-gray')"
+            th:text="${ev.status!=null?(ev.status.name()=='PLANNED'?'Planifié':(ev.status.name()=='ONGOING'?'En cours':'Terminé')):'?'}">S</span>
         </div>
-
-        <!-- Contenu -->
-        <div style="flex:1;padding:20px 24px;">
-          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;">
-            <div style="flex:1;">
-              <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap;">
-                <h3 style="font-family:'Playfair Display',serif;font-size:18px;font-style:italic;color:var(--dark);" th:text="${e.title}">Titre</h3>
-                <span class="badge"
-                  th:classappend="${e.status.name()=='UPCOMING'}?'b-blue':(${e.status.name()=='COMPLETED'}?'b-green':(${e.status.name()=='ONGOING'}?'b-amber':'b-gray'))"
-                  th:text="${e.status.name()=='UPCOMING'?'A venir':e.status.name()=='ONGOING'?'En cours':e.status.name()=='COMPLETED'?'Termine':'Annule'}">S</span>
-                <span class="badge b-gray"
-                  th:text="${e.type.name()=='HUMANITARIAN'?'Humanitaire':e.type.name()=='BLOOD_DONATION'?'Don sang':e.type.name()=='TRAINING'?'Formation':e.type.name()=='AWARENESS'?'Sensibilisation':e.type.name()=='DISTRIBUTION'?'Distribution':'Autre'}">TYPE</span>
-              </div>
-
-              <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:12px;">
-                <div th:if="${e.location}">
-                  <div class="flabel">Lieu</div>
-                  <div class="cell-name" th:text="${e.location}">Lieu</div>
-                </div>
-                <div th:if="${e.responsibleName}">
-                  <div class="flabel">Responsable</div>
-                  <div class="cell-name" th:text="${e.responsibleName}">Responsable</div>
-                </div>
-                <div th:if="${e.participantsCount}">
-                  <div class="flabel">Participants</div>
-                  <div class="cell-name" th:text="${e.participantsCount}+' personnes'">0</div>
-                </div>
-              </div>
-
-              <div th:if="${e.volunteerNames}" style="margin-bottom:8px;">
-                <div class="flabel" style="margin-bottom:4px;">Benevoles</div>
-                <div style="display:flex;flex-wrap:wrap;gap:5px;">
-                  <span th:each="vol : ${e.volunteerNames.split(',')}"
-                        style="padding:3px 10px;background:var(--green-bg);color:var(--green);border-radius:99px;font-size:11px;font-weight:600;"
-                        th:text="${vol.trim()}">Bénévole</span>
-                </div>
-              </div>
-
-              <div th:if="${e.familyNames}" style="margin-bottom:8px;">
-                <div class="flabel" style="margin-bottom:4px;">Familles beneficiaires</div>
-                <div style="display:flex;flex-wrap:wrap;gap:5px;">
-                  <span th:each="fam : ${e.familyNames.split(',')}"
-                        style="padding:3px 10px;background:var(--amber-bg);color:var(--amber);border-radius:99px;font-size:11px;font-weight:600;"
-                        th:text="${fam.trim()}">Famille</span>
-                </div>
-              </div>
-
-              <div th:if="${e.description}" style="font-size:13px;color:var(--gray-4);" th:text="${e.description}">Desc</div>
-            </div>
-
-            <div style="display:flex;gap:6px;flex-shrink:0;">
-              <a th:href="@{/events/edit/{id}(id=${e.id})}" class="btn btn-secondary btn-sm btn-icon">&#9998;</a>
-              <a th:href="@{/events/delete/{id}(id=${e.id})}" class="btn btn-danger btn-sm btn-icon" onclick="return confirm('Supprimer ?')">&#128465;</a>
-            </div>
-          </div>
-        </div>
+        <div class="cell-sub" style="margin-top:4px;" th:text="${ev.location!=null?'📍 '+ev.location:''}"></div>
+        <div class="cell-sub" th:text="${ev.responsibleName!=null?'👤 Resp: '+ev.responsibleName:''}"></div>
+        <div style="font-size:12px;color:var(--text-3);margin-top:6px;" th:text="${ev.description!=null?ev.description.length()>100?ev.description.substring(0,100)+'...':ev.description:''}"></div>
+      </div>
+      <div class="actions" style="flex-shrink:0;">
+        <a th:href="@{/events/edit/{id}(id=${ev.id})}" class="btn btn-secondary btn-sm btn-icon">✏️</a>
+        <a th:href="@{/events/delete/{id}(id=${ev.id})}" class="btn btn-danger btn-sm btn-icon" onclick="return confirm('Supprimer ?')">🗑️</a>
       </div>
     </div>
   </div>
-
 </section>
 </div>
 </body>

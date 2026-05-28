@@ -1,109 +1,313 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head><meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
-  <meta name="theme-color" content="#CC1A1A"/>
-  <meta name="apple-mobile-web-app-capable" content="yes"/>
-  <meta name="apple-mobile-web-app-title" content="CRT Megrine"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="theme-color" content="#080810"/>
   <link rel="manifest" href="/manifest.json"/>
   <link rel="apple-touch-icon" href="/icons/icon-apple.png"/>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,700;1,400&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" th:href="@{/css/main.css}"/>
+  <style>
+    /* Mesh background glow */
+    .page-wrap::before {
+      content:''; position:fixed; top:-200px; right:-100px;
+      width:500px; height:500px; border-radius:50%; pointer-events:none; z-index:0;
+      background:radial-gradient(circle, rgba(232,25,44,0.06) 0%, transparent 65%);
+    }
+    .page-wrap::after {
+      content:''; position:fixed; bottom:-150px; left:calc(var(--sidebar-w) - 100px);
+      width:400px; height:400px; border-radius:50%; pointer-events:none; z-index:0;
+      background:radial-gradient(circle, rgba(77,158,255,0.04) 0%, transparent 65%);
+    }
+    .page-wrap > * { position:relative; z-index:1; }
+
+    /* Big stat card */
+    .big-stat {
+      background:var(--card); border:1px solid var(--card-border);
+      border-radius:var(--radius); padding:22px;
+      display:flex; flex-direction:column; gap:8px;
+      position:relative; overflow:hidden;
+      transition:var(--transition); cursor:default;
+    }
+    .big-stat:hover { transform:translateY(-3px); border-color:rgba(255,255,255,0.14); box-shadow:0 8px 32px rgba(0,0,0,0.4); }
+    .big-stat .ico {
+      width:48px; height:48px; border-radius:12px;
+      display:flex; align-items:center; justify-content:center; font-size:22px;
+      margin-bottom:4px;
+    }
+    .big-stat .num {
+      font-family:'Syne',sans-serif; font-size:38px; font-weight:800;
+      line-height:1; letter-spacing:-0.03em;
+    }
+    .big-stat .lbl { font-size:12px; color:var(--text-3); font-weight:500; }
+    .big-stat .sub { font-size:11px; margin-top:4px; }
+
+    /* Glow decoration on stat cards */
+    .glow-red::after {
+      content:''; position:absolute; top:-40px; right:-40px;
+      width:130px; height:130px; border-radius:50%;
+      background:radial-gradient(circle, rgba(232,25,44,0.25) 0%, transparent 70%);
+    }
+    .glow-green::after {
+      content:''; position:absolute; top:-40px; right:-40px;
+      width:130px; height:130px; border-radius:50%;
+      background:radial-gradient(circle, rgba(16,217,160,0.2) 0%, transparent 70%);
+    }
+    .glow-amber::after {
+      content:''; position:absolute; top:-40px; right:-40px;
+      width:130px; height:130px; border-radius:50%;
+      background:radial-gradient(circle, rgba(245,166,35,0.2) 0%, transparent 70%);
+    }
+    .glow-blue::after {
+      content:''; position:absolute; top:-40px; right:-40px;
+      width:130px; height:130px; border-radius:50%;
+      background:radial-gradient(circle, rgba(77,158,255,0.2) 0%, transparent 70%);
+    }
+
+    /* Event row */
+    .event-row {
+      display:flex; gap:14px; align-items:center;
+      padding:14px 0; border-bottom:1px solid rgba(255,255,255,0.05);
+    }
+    .event-row:last-child { border-bottom:none; padding-bottom:0; }
+    .evt-date {
+      min-width:44px; width:44px; height:44px;
+      border-radius:var(--radius-xs); background:var(--red-pale);
+      border:1px solid rgba(232,25,44,0.2);
+      display:flex; flex-direction:column; align-items:center; justify-content:center;
+    }
+    .evt-day { font-family:'Syne',sans-serif; font-size:16px; font-weight:800; color:var(--red-2); line-height:1; }
+    .evt-mon { font-size:8px; text-transform:uppercase; color:var(--text-3); margin-top:1px; letter-spacing:.06em; }
+
+    /* Stock alert row */
+    .stock-row { display:flex; align-items:center; gap:12px; padding:10px 0; border-bottom:1px solid rgba(255,255,255,0.05); }
+    .stock-row:last-child { border-bottom:none; }
+    .stock-ico { font-size:18px; width:32px; text-align:center; }
+    .stock-bar-wrap { flex:1; }
+    .stock-bar-bg { background:rgba(255,255,255,0.06); border-radius:99px; height:4px; margin-top:5px; overflow:hidden; }
+    .stock-bar-fill { height:4px; border-radius:99px; }
+
+    /* Volunteer mini row */
+    .vol-row { display:flex; align-items:center; gap:10px; padding:10px 0; border-bottom:1px solid rgba(255,255,255,0.05); }
+    .vol-row:last-child { border-bottom:none; }
+    .vol-av { width:36px; height:36px; border-radius:50%; background:linear-gradient(135deg,var(--red),#600010); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:13px; flex-shrink:0; }
+
+    /* Welcome banner */
+    .welcome-banner {
+      background:linear-gradient(135deg, rgba(232,25,44,0.15) 0%, rgba(77,158,255,0.06) 100%);
+      border:1px solid rgba(232,25,44,0.2); border-radius:var(--radius);
+      padding:20px 24px; margin-bottom:22px;
+      display:flex; align-items:center; justify-content:space-between; gap:16px;
+    }
+    .welcome-text { font-family:'Syne',sans-serif; font-size:20px; font-weight:700; color:var(--text); }
+    .welcome-sub { font-size:12px; color:var(--text-3); margin-top:3px; }
+
+    @media(max-width:900px){
+      .stats-4 { grid-template-columns:1fr 1fr !important; }
+      .dash-grid { grid-template-columns:1fr !important; }
+      .big-stat .num { font-size:28px; }
+    }
+  </style>
 </head>
 <body>
 <div th:replace="~{fragments/layout :: layout(~{::section#pg},'Tableau de bord','dashboard')}">
 <section id="pg">
 
-  <div th:if="${param.access != null}" class="flash flash-err" style="margin-bottom:16px;">
-    &#128274; Acces refuse — Vous n'avez pas la permission d'acceder a cette section.
-    Contactez votre administrateur.
-  </div>
-  <div class="stats-grid">
-    <div class="stat-card c-red">
-      <div class="stat-ico">&#127968;</div>
-      <div class="stat-val" th:text="${totalFamilies}">0</div>
-      <div class="stat-lbl">Familles</div>
-      <div class="stat-sub"><span th:text="${activeFamilies}+' actives'">0</span></div>
+  <!-- Welcome banner -->
+  <div class="welcome-banner">
+    <div>
+      <div class="welcome-text">
+        Bonjour, <span sec:authentication="name" style="color:var(--red-2);">Admin</span> 👋
+      </div>
+      <div class="welcome-sub">Voici un résumé de l'activité de la délégation de Mégrine</div>
     </div>
-    <div class="stat-card c-amber">
-      <div class="stat-ico">&#128101;</div>
-      <div class="stat-val" th:text="${totalVolunteers}">0</div>
-      <div class="stat-lbl">Benevoles</div>
-      <div class="stat-sub" style="background:var(--amber-bg);color:var(--amber);"><span th:text="${activeVolunteers}+' actifs'">0</span></div>
-    </div>
-    <div class="stat-card c-green">
-      <div class="stat-ico">&#128144;</div>
-      <div class="stat-val" style="font-size:24px;" th:text="${totalAmount!=null?totalAmount.setScale(0)+' TND':'0 TND'}">0</div>
-      <div class="stat-lbl">Montant collecte</div>
-      <div class="stat-sub">Dons monetaires</div>
-    </div>
-    <div class="stat-card c-blue">
-      <div class="stat-ico">&#128197;</div>
-      <div class="stat-val" th:text="${upcomingEvents}">0</div>
-      <div class="stat-lbl">Evenements a venir</div>
-      <div class="stat-sub" style="background:var(--blue-bg);color:var(--blue);">Planifies</div>
+    <div class="status-pill" style="flex-shrink:0;">
+      <span class="status-dot"></span>Système actif
     </div>
   </div>
 
-  <div class="two-col">
-    <!-- Prochains evenements -->
-    <div class="card">
-      <div class="card-head">
-        <h3 class="card-title">Prochains evenements</h3>
-        <a href="/events/new" class="btn btn-primary btn-sm">+ Ajouter</a>
+  <!-- 4 Big stat cards -->
+  <div class="stats-4" style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:22px;">
+
+    <!-- Familles -->
+    <a href="/families" class="big-stat glow-red" style="text-decoration:none;">
+      <div class="ico" style="background:var(--red-pale);">🏠</div>
+      <div class="num" style="color:var(--red-2);" th:text="${totalFamilies?:0}">0</div>
+      <div class="lbl">Familles</div>
+      <div class="sub">
+        <span class="badge b-green" th:text="${activeFamily!=null?activeFamily+' actives':'—'}">actives</span>
       </div>
-      <div class="card-body">
-        <div th:if="${recentEvents.empty}" class="empty" style="padding:30px;">
-          <div class="empty-ico">&#128197;</div>
-          <div class="empty-title">Aucun evenement prevu</div>
+    </a>
+
+    <!-- Bénévoles -->
+    <a href="/volunteers" class="big-stat glow-green" style="text-decoration:none;">
+      <div class="ico" style="background:var(--green-bg);">👥</div>
+      <div class="num" style="color:var(--green);" th:text="${totalVolunteers?:0}">0</div>
+      <div class="lbl">Bénévoles</div>
+      <div class="sub">
+        <span class="badge b-green" th:text="${activeVolunteers!=null?activeVolunteers+' actifs':'—'}">actifs</span>
+      </div>
+    </a>
+
+    <!-- Dons -->
+    <a href="/donations" class="big-stat glow-amber" style="text-decoration:none;">
+      <div class="ico" style="background:var(--amber-bg);">💰</div>
+      <div class="num" style="color:var(--amber);"
+           th:text="${totalAmount!=null?totalAmount.setScale(0)+' TND':'0 TND'}">0</div>
+      <div class="lbl">Montant collecté</div>
+      <div class="sub">
+        <span class="badge b-amber" th:text="${totalDonations!=null?totalDonations+' dons':'—'}">dons</span>
+      </div>
+    </a>
+
+    <!-- Événements -->
+    <a href="/events" class="big-stat glow-blue" style="text-decoration:none;">
+      <div class="ico" style="background:var(--blue-bg);">📅</div>
+      <div class="num" style="color:var(--blue);" th:text="${upcomingEvents?:0}">0</div>
+      <div class="lbl">Événements à venir</div>
+      <div class="sub">
+        <span class="badge b-blue">Planifiés</span>
+      </div>
+    </a>
+
+  </div>
+
+  <!-- Main grid: left big + right sidebar -->
+  <div class="dash-grid">
+
+    <!-- LEFT COLUMN -->
+    <div style="display:flex;flex-direction:column;gap:16px;">
+
+      <!-- Prochains événements -->
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title">📅 Prochains événements</div>
+          <a href="/events/new" class="btn btn-primary btn-sm">+ Ajouter</a>
         </div>
-        <div th:each="e : ${recentEvents}" style="display:flex;align-items:center;gap:14px;padding:12px 20px;border-bottom:1px solid var(--gray-2);">
-          <div style="width:44px;height:44px;border-radius:10px;background:var(--blue-bg);border:1px solid rgba(29,78,216,0.15);display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;">
-            <span style="font-family:'Playfair Display',serif;font-size:16px;color:var(--blue);line-height:1;" th:text="${e.eventDate!=null?e.eventDate.dayOfMonth:'?'}">15</span>
-            <span style="font-size:9px;color:var(--blue);font-weight:700;" th:text="${e.eventDate!=null?#temporals.format(e.eventDate,'MMM',new java.util.Locale('fr')):''}">Jan</span>
+        <div th:if="${upcomingEventsList==null or upcomingEventsList.empty}">
+          <div class="empty" style="padding:24px;">
+            <div class="empty-ico">📅</div>
+            <div class="empty-title">Aucun événement planifié</div>
+          </div>
+        </div>
+        <div th:each="ev : ${upcomingEventsList}" class="event-row">
+          <div class="evt-date">
+            <div class="evt-day" th:text="${#temporals.day(ev.eventDate)}">1</div>
+            <div class="evt-mon" th:text="${#temporals.monthName(ev.eventDate).substring(0,3)}">Jan</div>
           </div>
           <div style="flex:1;">
-            <div class="cell-name" th:text="${e.title}">Titre</div>
-            <div class="cell-sub" th:text="${e.responsibleName!=null?'Resp: '+e.responsibleName:e.location?:'—'}">Detail</div>
+            <div class="cell-name" th:text="${ev.title}">Titre</div>
+            <div class="cell-sub" th:text="${ev.responsibleName!=null?'Resp. '+ev.responsibleName:''}"></div>
           </div>
+          <span class="badge"
+                th:classappend="${ev.status.name()=='PLANNED'?'b-blue':(ev.status.name()=='ONGOING'?'b-green':'b-gray')}"
+                th:text="${ev.status.name()=='PLANNED'?'Planifié':(ev.status.name()=='ONGOING'?'En cours':'Terminé')}">
+          </span>
         </div>
       </div>
+
+      <!-- Stock faible -->
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title">⚠️ Stock faible</div>
+          <a href="/stock" class="btn btn-secondary btn-sm">Voir stock</a>
+        </div>
+        <div th:if="${lowStock==null or lowStock.empty}">
+          <div style="padding:12px 0;text-align:center;color:var(--green);font-size:13px;font-weight:600;">
+            ✅ Tous les stocks sont suffisants
+          </div>
+        </div>
+        <div th:each="item : ${lowStock}" class="stock-row">
+          <div class="stock-ico">
+            <span th:text="${item.category!=null and item.category.name()=='FOOD'?'🥫':(item.category!=null and item.category.name()=='MEDICAL'?'💊':(item.category!=null and item.category.name()=='CLOTHES'?'👕':'📦'))}">📦</span>
+          </div>
+          <div class="stock-bar-wrap" style="flex:1;">
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <span style="font-size:12px;font-weight:600;color:var(--text);" th:text="${item.name}">Article</span>
+              <span style="font-size:11px;font-weight:700;"
+                    th:style="${item.quantity<=item.quantityMin/2}?'color:var(--red-2);':'color:var(--amber);'"
+                    th:text="${item.quantity}+' / '+${item.quantityMin}">0</span>
+            </div>
+            <div class="stock-bar-bg">
+              <div class="stock-bar-fill"
+                   th:style="'width:'+${item.quantityMin>0?(item.quantity*100/item.quantityMin):0}+'%;background:'+(${item.quantity<=item.quantityMin/2}?'var(--red-2)':'var(--amber)')"></div>
+            </div>
+          </div>
+          <span style="font-size:16px;" th:text="${item.quantity<=item.quantityMin/2}?'🔴':'🟡'">⚠️</span>
+        </div>
+      </div>
+
     </div>
 
-    <!-- Alertes stock + familles recentes -->
+    <!-- RIGHT COLUMN -->
     <div style="display:flex;flex-direction:column;gap:16px;">
+
+      <!-- Bénévoles actifs -->
       <div class="card">
         <div class="card-head">
-          <h3 class="card-title">Stock faible</h3>
-          <a href="/stock" class="btn btn-ghost btn-sm">Voir stock</a>
+          <div class="card-title">👥 Bénévoles actifs</div>
+          <a href="/volunteers" class="btn btn-secondary btn-sm" style="font-size:10px;">Voir tous</a>
         </div>
-        <div class="card-body">
-          <div th:if="${lowStockItems.empty}" style="padding:16px 20px;font-size:13px;color:var(--green);">&#10003; Tous les stocks sont suffisants</div>
-          <div th:each="item : ${lowStockItems}" style="display:flex;align-items:center;justify-content:space-between;padding:10px 20px;border-bottom:1px solid var(--gray-2);">
-            <div class="cell-name" th:text="${item.name}">Article</div>
-            <div style="display:flex;align-items:center;gap:8px;">
-              <span style="font-weight:700;color:var(--red);" th:text="${item.quantity}">0</span>
-              <span class="badge b-red" style="font-size:9px;">FAIBLE</span>
-            </div>
+        <div th:if="${topVolunteers==null or topVolunteers.empty}">
+          <div class="empty" style="padding:20px;">
+            <div class="empty-ico">👤</div>
+            <div class="empty-title">Aucun bénévole</div>
+          </div>
+        </div>
+        <div th:each="v : ${topVolunteers}" class="vol-row">
+          <div class="vol-av" th:text="${v.firstName.substring(0,1)}">A</div>
+          <div style="flex:1;min-width:0;">
+            <div class="cell-name" style="font-size:12px;" th:text="${v.firstName+' '+v.lastName}">Nom</div>
+            <div class="cell-sub" th:text="${v.totalHours!=null?v.totalHours+' heures':'0 heures'}">0h</div>
+          </div>
+          <span class="badge"
+                th:classappend="${v.status!=null and v.status.name()=='ACTIVE'}?'b-green':'b-gray'"
+                th:text="${v.status!=null?v.status.name():'—'}">ACTIF</span>
+        </div>
+      </div>
+
+      <!-- Stats rapides -->
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title">📊 Statistiques rapides</div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+          <div class="stat-mini">
+            <div class="stat-mini-val" th:text="${totalStock?:0}">0</div>
+            <div class="stat-mini-lbl">📦 Articles stock</div>
+          </div>
+          <div class="stat-mini">
+            <div class="stat-mini-val" th:text="${totalUsers?:0}">0</div>
+            <div class="stat-mini-lbl">👤 Utilisateurs</div>
+          </div>
+          <div class="stat-mini">
+            <div class="stat-mini-val" th:text="${totalDonations?:0}">0</div>
+            <div class="stat-mini-lbl">❤️ Dons total</div>
+          </div>
+          <div class="stat-mini">
+            <div class="stat-mini-val" th:text="${totalEvents?:0}">0</div>
+            <div class="stat-mini-lbl">📅 Événements</div>
           </div>
         </div>
       </div>
 
-      <div class="card">
+      <!-- Inscription en attente (admin) -->
+      <div sec:authorize="hasRole('ADMIN')" class="card" th:if="${pendingCount!=null and pendingCount>0}"
+           style="border-color:rgba(245,166,35,0.3);background:rgba(245,166,35,0.05);">
         <div class="card-head">
-          <h3 class="card-title">Benevoles actifs</h3>
-          <a href="/volunteers" class="btn btn-ghost btn-sm">Voir tous</a>
+          <div class="card-title" style="color:var(--amber);">⏳ Inscriptions en attente</div>
         </div>
-        <div class="card-body">
-          <div th:each="v : ${volunteers}" style="display:flex;align-items:center;gap:10px;padding:10px 20px;border-bottom:1px solid var(--gray-2);">
-            <div class="av" style="width:30px;height:30px;font-size:11px;border-radius:7px;" th:text="${#strings.substring(v.firstName,0,1)+#strings.substring(v.lastName,0,1)}">AB</div>
-            <div>
-              <div class="cell-name" th:text="${v.fullName}">Nom</div>
-            </div>
-            <span class="blood" style="margin-left:auto;" th:text="${v.bloodType?:'?'}">A+</span>
-          </div>
+        <div style="text-align:center;padding:8px 0;">
+          <div style="font-family:'Syne',sans-serif;font-size:40px;font-weight:800;color:var(--amber);"
+               th:text="${pendingCount}">0</div>
+          <div style="font-size:12px;color:var(--text-3);margin-top:4px;">demandes à traiter</div>
+          <a href="/admin/registrations" class="btn btn-sm" style="margin-top:12px;background:var(--amber-bg);color:var(--amber);border-color:rgba(245,166,35,0.3);">
+            Traiter les demandes →
+          </a>
         </div>
       </div>
+
     </div>
   </div>
 

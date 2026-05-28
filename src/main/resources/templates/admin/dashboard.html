@@ -1,188 +1,83 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head><meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <meta name="theme-color" content="#CC1A1A"/>
-  <link rel="manifest" href="/manifest.json"/>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,700;1,400&display=swap" rel="stylesheet"/>
+<head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" th:href="@{/css/main.css}"/>
-  <style>
-    .log-row-LOGIN { border-left: 3px solid var(--blue); }
-    .log-row-LOGOUT { border-left: 3px solid var(--gray-3); }
-    .log-row-CREATE { border-left: 3px solid var(--green); }
-    .log-row-UPDATE { border-left: 3px solid var(--amber); }
-    .log-row-DELETE { border-left: 3px solid var(--red); }
-    .stat-mini { background:#fff;border-radius:10px;padding:14px 16px;border:1px solid var(--gray-2);text-align:center; }
-    .stat-mini-val { font-family:'Playfair Display',serif;font-size:24px;color:var(--dark); }
-    .stat-mini-lbl { font-size:11px;color:var(--gray-4);margin-top:2px; }
-  </style>
 </head>
 <body>
 <div th:replace="~{fragments/layout :: layout(~{::section#pg},'Dashboard Admin','admin')}">
 <section id="pg">
+  <div class="ph"><div><h2 class="ph-title">Dashboard Administrateur</h2><p class="ph-sub">Journal d'activité et statistiques système</p></div></div>
 
-  <!-- Stats systeme globales -->
-  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px;margin-bottom:20px;">
-    <div class="stat-mini"><div class="stat-mini-val" th:text="${totalUsers}">0</div><div class="stat-mini-lbl">&#128100; Utilisateurs</div></div>
-    <div class="stat-mini"><div class="stat-mini-val" th:text="${totalVolunteers}">0</div><div class="stat-mini-lbl">&#128101; Benevoles</div></div>
-    <div class="stat-mini"><div class="stat-mini-val" th:text="${totalFamilies}">0</div><div class="stat-mini-lbl">&#127968; Familles</div></div>
-    <div class="stat-mini"><div class="stat-mini-val" th:text="${totalDonations}">0</div><div class="stat-mini-lbl">&#10084; Dons</div></div>
-    <div class="stat-mini"><div class="stat-mini-val" th:text="${totalStock}">0</div><div class="stat-mini-lbl">&#128230; Stock</div></div>
-    <div class="stat-mini"><div class="stat-mini-val" th:text="${totalEvents}">0</div><div class="stat-mini-lbl">&#128197; Evenements</div></div>
-    <div class="stat-mini"><div class="stat-mini-val" th:text="${totalParticipations}">0</div><div class="stat-mini-lbl">&#127919; Inscriptions</div></div>
-    <div class="stat-mini" style="background:var(--green-bg);border-color:rgba(22,163,74,0.2);">
-      <div class="stat-mini-val" style="color:var(--green);" th:text="${totalAmount!=null?totalAmount.setScale(0)+'':' 0'}">0</div>
-      <div class="stat-mini-lbl">&#128176; TND collectes</div>
+  <!-- Stats globales -->
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:10px;margin-bottom:20px;">
+    <div class="stat-mini"><div class="stat-mini-val" th:text="${totalUsers?:0}">0</div><div class="stat-mini-lbl">👤 Utilisateurs</div></div>
+    <div class="stat-mini"><div class="stat-mini-val" th:text="${totalVolunteers?:0}">0</div><div class="stat-mini-lbl">👥 Bénévoles</div></div>
+    <div class="stat-mini"><div class="stat-mini-val" th:text="${totalFamilies?:0}">0</div><div class="stat-mini-lbl">🏠 Familles</div></div>
+    <div class="stat-mini"><div class="stat-mini-val" th:text="${totalDonations?:0}">0</div><div class="stat-mini-lbl">❤️ Dons</div></div>
+    <div class="stat-mini"><div class="stat-mini-val" th:text="${totalStock?:0}">0</div><div class="stat-mini-lbl">📦 Stock</div></div>
+    <div class="stat-mini"><div class="stat-mini-val" th:text="${totalEvents?:0}">0</div><div class="stat-mini-lbl">📅 Événements</div></div>
+    <div class="stat-mini" style="background:var(--green-bg);border-color:rgba(16,217,160,0.2);">
+      <div class="stat-mini-val" style="color:var(--green);" th:text="${totalAmount!=null?totalAmount.setScale(0)+' TND':'0 TND'}">0</div>
+      <div class="stat-mini-lbl" style="color:var(--green);">💰 Collectés</div>
     </div>
   </div>
 
   <!-- Stats logs -->
   <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:20px;">
-    <div style="background:#fff;border-radius:10px;padding:14px;text-align:center;border:1px solid var(--gray-2);">
-      <div style="font-family:'Playfair Display',serif;font-size:22px;color:var(--dark);" th:text="${totalLogs}">0</div>
-      <div style="font-size:11px;color:var(--gray-4);">Total actions</div>
-    </div>
-    <a href="/admin/logs/filter?type=LOGIN" style="text-decoration:none;background:var(--blue-bg);border-radius:10px;padding:14px;text-align:center;border:1px solid rgba(29,78,216,0.15);">
-      <div style="font-family:'Playfair Display',serif;font-size:22px;color:var(--blue);" th:text="${loginCount}">0</div>
-      <div style="font-size:11px;color:var(--blue);">&#128274; Connexions</div>
+    <div class="stat-mini"><div class="stat-mini-val" th:text="${totalLogs?:0}">0</div><div class="stat-mini-lbl">Total actions</div></div>
+    <a href="/admin/logs/filter?type=LOGIN" class="stat-mini" style="text-decoration:none;background:var(--blue-bg);border-color:rgba(77,158,255,0.2);">
+      <div class="stat-mini-val" style="color:var(--blue);" th:text="${loginCount?:0}">0</div><div class="stat-mini-lbl" style="color:var(--blue);">🔑 Connexions</div>
     </a>
-    <a href="/admin/logs/filter?type=CREATE" style="text-decoration:none;background:var(--green-bg);border-radius:10px;padding:14px;text-align:center;border:1px solid rgba(22,163,74,0.15);">
-      <div style="font-family:'Playfair Display',serif;font-size:22px;color:var(--green);" th:text="${createCount}">0</div>
-      <div style="font-size:11px;color:var(--green);">&#10133; Ajouts</div>
+    <a href="/admin/logs/filter?type=CREATE" class="stat-mini" style="text-decoration:none;background:var(--green-bg);border-color:rgba(16,217,160,0.2);">
+      <div class="stat-mini-val" style="color:var(--green);" th:text="${createCount?:0}">0</div><div class="stat-mini-lbl" style="color:var(--green);">➕ Ajouts</div>
     </a>
-    <a href="/admin/logs/filter?type=UPDATE" style="text-decoration:none;background:var(--amber-bg);border-radius:10px;padding:14px;text-align:center;border:1px solid rgba(180,83,9,0.15);">
-      <div style="font-family:'Playfair Display',serif;font-size:22px;color:var(--amber);" th:text="${updateCount}">0</div>
-      <div style="font-size:11px;color:var(--amber);">&#9999;&#65039; Modifs</div>
+    <a href="/admin/logs/filter?type=UPDATE" class="stat-mini" style="text-decoration:none;background:var(--amber-bg);border-color:rgba(245,166,35,0.2);">
+      <div class="stat-mini-val" style="color:var(--amber);" th:text="${updateCount?:0}">0</div><div class="stat-mini-lbl" style="color:var(--amber);">✏️ Modifs</div>
     </a>
-    <a href="/admin/logs/filter?type=DELETE" style="text-decoration:none;background:var(--red-pale);border-radius:10px;padding:14px;text-align:center;border:1px solid rgba(204,26,26,0.15);">
-      <div style="font-family:'Playfair Display',serif;font-size:22px;color:var(--red);" th:text="${deleteCount}">0</div>
-      <div style="font-size:11px;color:var(--red);">&#128465; Suppressions</div>
+    <a href="/admin/logs/filter?type=DELETE" class="stat-mini" style="text-decoration:none;background:var(--red-pale);border-color:rgba(232,25,44,0.2);">
+      <div class="stat-mini-val" style="color:var(--red-2);" th:text="${deleteCount?:0}">0</div><div class="stat-mini-lbl" style="color:var(--red-2);">🗑️ Supprim.</div>
     </a>
-    <a href="/admin/logs/filter?type=LOGOUT" style="text-decoration:none;background:var(--gray-1);border-radius:10px;padding:14px;text-align:center;border:1px solid var(--gray-2);">
-      <div style="font-family:'Playfair Display',serif;font-size:22px;color:var(--gray-4);" th:text="${logoutCount}">0</div>
-      <div style="font-size:11px;color:var(--gray-4);">&#128682; Deconnexions</div>
+    <a href="/admin/logs/filter?type=LOGOUT" class="stat-mini" style="text-decoration:none;">
+      <div class="stat-mini-val" th:text="${logoutCount?:0}">0</div><div class="stat-mini-lbl">🚪 Déconn.</div>
     </a>
   </div>
 
-  <div style="display:grid;grid-template-columns:1fr 300px;gap:20px;">
-
-    <!-- Journal principal -->
-    <div class="card">
-      <div class="card-head">
-        <h3 class="card-title">&#128203; Journal d'activite</h3>
-        <div style="display:flex;gap:5px;flex-wrap:wrap;">
-          <a href="/admin/dashboard" class="btn btn-sm" th:classappend="${filterType==null and filterUser==null}?' btn-primary':' btn-secondary'">Tout</a>
-          <a href="/admin/logs/filter?type=LOGIN" class="btn btn-sm" th:classappend="${filterType=='LOGIN'}?' btn-primary':' btn-secondary'">Connexions</a>
-          <a href="/admin/logs/filter?type=CREATE" class="btn btn-sm" th:classappend="${filterType=='CREATE'}?' btn-primary':' btn-secondary'">Ajouts</a>
-          <a href="/admin/logs/filter?type=UPDATE" class="btn btn-sm" th:classappend="${filterType=='UPDATE'}?' btn-primary':' btn-secondary'">Modifs</a>
-          <a href="/admin/logs/filter?type=DELETE" class="btn btn-sm" th:classappend="${filterType=='DELETE'}?' btn-primary':' btn-secondary'">Suppressions</a>
-          <a href="/admin/logs/filter?type=LOGOUT" class="btn btn-sm" th:classappend="${filterType=='LOGOUT'}?' btn-secondary':' btn-secondary'">Deconnex.</a>
-        </div>
-      </div>
-
-      <div style="overflow-x:auto;">
-        <table class="tbl">
-          <thead>
-            <tr><th>Date &amp; Heure</th><th>Utilisateur</th><th>Action</th><th>Type</th><th>Section</th><th>Details</th></tr>
-          </thead>
-          <tbody>
-            <tr th:if="${logs.empty}">
-              <td colspan="6">
-                <div class="empty">
-                  <div class="empty-ico">&#128203;</div>
-                  <div class="empty-title">Aucune activite enregistree</div>
-                  <div style="font-size:13px;color:var(--gray-4);margin-top:6px;">Les actions apparaitront ici apres utilisation</div>
-                </div>
-              </td>
-            </tr>
-            <tr th:each="log : ${logs}"
-                th:classappend="${'log-row-'+(log.actionType!=null?log.actionType.name():'VIEW')}">
-              <td style="font-size:11px;color:var(--gray-4);white-space:nowrap;"
-                  th:text="${log.createdAt!=null?#temporals.format(log.createdAt,'dd/MM HH:mm:ss'):'—'}">Date</td>
-              <td>
-                <div style="display:flex;align-items:center;gap:6px;">
-                  <div class="av" style="width:24px;height:24px;font-size:9px;border-radius:5px;"
-                       th:text="${log.username!=null?#strings.substring(log.username,0,1).toUpperCase():'?'}">A</div>
-                  <span style="font-size:12px;font-weight:600;" th:text="${log.username?:'—'}">user</span>
-                </div>
-              </td>
-              <td style="font-size:12px;max-width:200px;" th:text="${log.action?:'—'}">Action</td>
-              <td>
-                <span class="badge" style="font-size:10px;"
-                  th:classappend="${log.actionType!=null and log.actionType.name()=='CREATE'}?'b-green':
-                                   (${log.actionType!=null and log.actionType.name()=='UPDATE'}?'b-amber':
-                                   (${log.actionType!=null and log.actionType.name()=='DELETE'}?'b-red':
-                                   (${log.actionType!=null and log.actionType.name()=='LOGIN'}?'b-blue':'b-gray')))"
-                  th:text="${log.actionType!=null?log.actionType.name():'—'}">TYPE</span>
-              </td>
-              <td style="font-size:11px;color:var(--gray-4);" th:text="${log.entityType?:'—'}">Section</td>
-              <td style="font-size:11px;color:var(--gray-4);max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"
-                  th:title="${log.details}" th:text="${log.details?:log.entityName?:'—'}">Details</td>
-            </tr>
-          </tbody>
-        </table>
+  <!-- Filtres + Journal -->
+  <div class="card">
+    <div class="card-head">
+      <div class="card-title">📋 Journal d'activité</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;">
+        <a href="/admin/dashboard" class="btn btn-sm" th:classappend="${filterType==null and filterUser==null}?' btn-primary':' btn-secondary'">Tout</a>
+        <a href="/admin/logs/filter?type=LOGIN"  class="btn btn-sm" th:classappend="${filterType=='LOGIN'}?' btn-primary':' btn-secondary'">Connexions</a>
+        <a href="/admin/logs/filter?type=CREATE" class="btn btn-sm" th:classappend="${filterType=='CREATE'}?' btn-primary':' btn-secondary'">Ajouts</a>
+        <a href="/admin/logs/filter?type=UPDATE" class="btn btn-sm" th:classappend="${filterType=='UPDATE'}?' btn-primary':' btn-secondary'">Modifs</a>
+        <a href="/admin/logs/filter?type=DELETE" class="btn btn-sm" th:classappend="${filterType=='DELETE'}?' btn-primary':' btn-secondary'">Supprim.</a>
+        <a href="/admin/logs/filter?type=LOGOUT" class="btn btn-sm btn-secondary">Déconn.</a>
       </div>
     </div>
-
-    <!-- Sidebar droite -->
-    <div style="display:flex;flex-direction:column;gap:14px;">
-
-      <!-- Filtrer par utilisateur -->
-      <div class="card">
-        <div class="card-head"><h3 class="card-title">&#128100; Par utilisateur</h3></div>
-        <div class="card-body">
-          <div th:if="${userActivity.empty}" style="padding:12px 16px;font-size:13px;color:var(--gray-4);">Aucune activite</div>
-          <div th:each="row : ${userActivity}"
-               style="display:flex;align-items:center;justify-content:space-between;padding:9px 16px;border-bottom:1px solid var(--gray-2);cursor:pointer;"
-               th:onclick="|window.location='/admin/logs/filter?user='+${row[0]}|">
-            <div style="display:flex;align-items:center;gap:7px;">
-              <div class="av" style="width:24px;height:24px;font-size:9px;border-radius:5px;"
-                   th:text="${row[0]!=null?#strings.substring(row[0].toString(),0,1).toUpperCase():'?'}">A</div>
-              <span style="font-size:12px;font-weight:600;" th:text="${row[0]}">user</span>
-            </div>
-            <span class="badge b-blue" style="font-size:10px;" th:text="${row[1]}+' actions'">0</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Par section -->
-      <div class="card">
-        <div class="card-head"><h3 class="card-title">&#128230; Par section</h3></div>
-        <div class="card-body">
-          <div th:if="${entityActivity.empty}" style="padding:12px 16px;font-size:13px;color:var(--gray-4);">Aucune activite</div>
-          <div th:each="row : ${entityActivity}"
-               style="display:flex;align-items:center;justify-content:space-between;padding:9px 16px;border-bottom:1px solid var(--gray-2);">
-            <span style="font-size:12px;font-weight:600;" th:text="${row[0]}">Section</span>
-            <span class="badge b-amber" style="font-size:10px;" th:text="${row[1]}+' actions'">0</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Dernieres connexions -->
-      <div class="card">
-        <div class="card-head"><h3 class="card-title">&#128274; Dernieres connexions</h3></div>
-        <div class="card-body">
-          <div th:if="${recentLogins==null or recentLogins.empty}" style="padding:12px 16px;font-size:13px;color:var(--gray-4);">Aucune connexion enregistree</div>
-          <div th:each="log,iter : ${recentLogins}" th:if="${iter.index < 8}"
-               style="padding:8px 16px;border-bottom:1px solid var(--gray-2);">
-            <div style="display:flex;justify-content:space-between;align-items:center;">
-              <div style="display:flex;align-items:center;gap:6px;">
-                <div class="av" style="width:22px;height:22px;font-size:9px;border-radius:5px;background:var(--blue-bg);color:var(--blue);"
-                     th:text="${log.username!=null?#strings.substring(log.username,0,1).toUpperCase():'?'}">A</div>
-                <span style="font-size:12px;font-weight:600;" th:text="${log.username}">user</span>
-              </div>
-              <span style="font-size:10px;color:var(--gray-4);"
-                    th:text="${log.createdAt!=null?#temporals.format(log.createdAt,'dd/MM HH:mm'):'—'}">date</span>
-            </div>
-            <div th:if="${log.details}" style="font-size:10px;color:var(--gray-4);margin-top:2px;padding-left:28px;"
-                 th:text="${log.details}">details</div>
-          </div>
-        </div>
-      </div>
-
+    <div style="overflow-x:auto;">
+      <table class="tbl">
+        <thead><tr><th>Date &amp; Heure</th><th>Utilisateur</th><th>Action</th><th>Type</th><th>Section</th></tr></thead>
+        <tbody>
+          <tr th:if="${logs==null or logs.empty}">
+            <td colspan="5"><div class="empty"><div class="empty-ico">📋</div><div class="empty-title">Aucune activité enregistrée</div></div></td>
+          </tr>
+          <tr th:each="log : ${logs}" th:class="'log-row log-row-'+(${log.actionType!=null?log.actionType.name():'VIEW'})">
+            <td style="font-size:11px;color:var(--text-3);white-space:nowrap;" th:text="${log.createdAt!=null?#temporals.format(log.createdAt,'dd/MM HH:mm'):'—'}">Date</td>
+            <td><span style="font-size:12px;font-weight:600;" th:text="${log.username?:'—'}">User</span></td>
+            <td style="font-size:12px;" th:text="${log.action?:'—'}">Action</td>
+            <td>
+              <span class="badge"
+                th:classappend="${log.actionType!=null and log.actionType.name()=='LOGIN'}?'b-blue':(${log.actionType!=null and log.actionType.name()=='CREATE'}?'b-green':(${log.actionType!=null and log.actionType.name()=='UPDATE'}?'b-amber':(${log.actionType!=null and log.actionType.name()=='DELETE'}?'b-red':'b-gray')))"
+                th:text="${log.actionType?:'-'}">TYPE</span>
+            </td>
+            <td style="font-size:11px;color:var(--text-3);" th:text="${log.entityType?:'—'}">Section</td>
+          </tr>
+        </tbody>
+      </table>
     </div>
   </div>
-
 </section>
 </div>
 </body>

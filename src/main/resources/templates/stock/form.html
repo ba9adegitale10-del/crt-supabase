@@ -1,127 +1,43 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head><meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
-  <meta name="theme-color" content="#CC1A1A"/>
-  <meta name="apple-mobile-web-app-capable" content="yes"/>
-  <meta name="apple-mobile-web-app-title" content="CRT Megrine"/>
-  <link rel="manifest" href="/manifest.json"/>
-  <link rel="apple-touch-icon" href="/icons/icon-apple.png"/>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,700;1,400&display=swap" rel="stylesheet"/>
+<head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" th:href="@{/css/main.css}"/>
 </head>
 <body>
-<div th:replace="~{fragments/layout :: layout(~{::section#pg},'Gestion de Stock','stock')}">
+<div th:replace="~{fragments/layout :: layout(~{::section#pg},'Stock','stock')}">
 <section id="pg">
-
   <div class="ph">
-    <div>
-      <h2 class="ph-title">
-        <span th:if="${item.id != null}">Modifier l'article</span>
-        <span th:if="${item.id == null}">Nouvel article de stock</span>
-      </h2>
-      <p class="ph-sub">Renseignez les informations de l'article</p>
-    </div>
-    <a href="/stock" class="btn btn-secondary">&#8592; Retour au stock</a>
+    <div><h2 class="ph-title" th:text="${item.id!=null?'Modifier article':'Nouvel article'}">Article</h2></div>
+    <a href="/stock" class="btn btn-secondary">← Retour</a>
   </div>
-
   <div class="form-wrap">
-    <form action="/stock/save" method="post">
-      <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+    <form th:action="@{/stock/save}" method="post">
       <input type="hidden" name="id" th:value="${item.id}"/>
-
       <div class="form-grid">
-
-        <div class="fgroup full">
-          <label class="flabel">Nom de l'article *</label>
-          <input type="text" name="name"
-                 th:value="${item.name}"
-                 class="finput"
-                 placeholder="Ex: Boites alimentaires, Couvertures, Medicaments..."
-                 required/>
-        </div>
-
-        <div class="fgroup">
-          <label class="flabel">Categorie *</label>
+        <div class="form-group"><label>Nom de l'article *</label><input type="text" name="name" class="finput" th:value="${item.name}" required/></div>
+        <div class="form-group"><label>Unité</label><input type="text" name="unit" class="finput" th:value="${item.unit}" placeholder="boite, pièce, kg..."/></div>
+        <div class="form-group"><label>Quantité *</label><input type="number" name="quantity" class="finput" th:value="${item.quantity?:0}" min="0" required/></div>
+        <div class="form-group"><label>Seuil minimum</label><input type="number" name="quantityMin" class="finput" th:value="${item.quantityMin?:0}" min="0"/></div>
+        <div class="form-group"><label>Catégorie</label>
           <select name="categoryEnum" class="finput">
-            <option value="FOOD"
-              th:selected="${item.categoryEnum == null or item.categoryEnum.name() == 'FOOD'}">
-              Alimentaire
-            </option>
-            <option value="CLOTHES"
-              th:selected="${item.categoryEnum != null and item.categoryEnum.name() == 'CLOTHES'}">
-              Vetements
-            </option>
-            <option value="MEDICAL"
-              th:selected="${item.categoryEnum != null and item.categoryEnum.name() == 'MEDICAL'}">
-              Medical
-            </option>
-            <option value="HYGIENE"
-              th:selected="${item.categoryEnum != null and item.categoryEnum.name() == 'HYGIENE'}">
-              Hygiene
-            </option>
-            <option value="EQUIPMENT"
-              th:selected="${item.categoryEnum != null and item.categoryEnum.name() == 'EQUIPMENT'}">
-              Equipement
-            </option>
-            <option value="OTHER"
-              th:selected="${item.categoryEnum != null and item.categoryEnum.name() == 'OTHER'}">
-              Autre
-            </option>
+            <option value="FOOD" th:selected="${item.categoryEnum==null or item.categoryEnum.name()=='FOOD'}">🥫 Alimentaire</option>
+            <option value="CLOTHES" th:selected="${item.categoryEnum!=null and item.categoryEnum.name()=='CLOTHES'}">👕 Vêtements</option>
+            <option value="MEDICAL" th:selected="${item.categoryEnum!=null and item.categoryEnum.name()=='MEDICAL'}">💊 Médical</option>
+            <option value="OTHER" th:selected="${item.categoryEnum!=null and item.categoryEnum.name()=='OTHER'}">📦 Autre</option>
           </select>
         </div>
-
-        <div class="fgroup">
-          <label class="flabel">Unite de mesure</label>
-          <input type="text" name="unit"
-                 th:value="${item.unit}"
-                 class="finput"
-                 placeholder="piece, kg, boite, litre, sac..."/>
-          <span class="fhint">Comment on compte cet article ?</span>
-        </div>
-
-        <div class="fgroup">
-          <label class="flabel">Quantite actuelle *</label>
-          <input type="number" name="quantity"
-                 th:value="${item.quantity != null ? item.quantity : 0}"
-                 min="0" class="finput" required/>
-        </div>
-
-        <div class="fgroup">
-          <label class="flabel">Seuil d'alerte minimum</label>
-          <input type="number" name="quantityMin"
-                 th:value="${item.quantityMin != null ? item.quantityMin : 0}"
-                 min="0" class="finput"/>
-          <span class="fhint">Alerte rouge si la quantite descend sous ce seuil</span>
-        </div>
-
-        <div class="fgroup">
-          <label class="flabel">Emplacement</label>
-          <input type="text" name="location"
-                 th:value="${item.location}"
-                 class="finput"
-                 placeholder="Entrepot A, Rayon 2, Armoire medicale..."/>
-        </div>
-
-        <div class="fgroup full">
-          <label class="flabel">Description</label>
-          <input type="text" name="description"
-                 th:value="${item.description}"
-                 class="finput"
-                 placeholder="Description de l'article..."/>
-        </div>
-
+        <div class="form-group"><label>Localisation</label><input type="text" name="location" class="finput" th:value="${item.location}" placeholder="Entrepôt A, Armoire..."/></div>
+        <div class="form-group"><label>Date d'entrée</label><input type="date" name="entryDate" class="finput" th:value="${item.entryDate}"/></div>
       </div>
-
+      <div class="form-group" style="margin-top:12px;"><label>Description</label><textarea name="description" class="finput" rows="3" th:text="${item.description}"></textarea></div>
+      <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
       <div class="form-actions">
-        <button type="submit" class="btn btn-primary">
-          &#10003; Enregistrer l'article
-        </button>
         <a href="/stock" class="btn btn-secondary">Annuler</a>
+        <button type="submit" class="btn btn-primary">💾 Enregistrer</button>
       </div>
     </form>
   </div>
-
 </section>
 </div>
 </body>

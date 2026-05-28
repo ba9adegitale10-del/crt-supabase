@@ -1,100 +1,45 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
-  <meta name="theme-color" content="#CC1A1A"/>
-  <meta name="apple-mobile-web-app-capable" content="yes"/>
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
-  <meta name="apple-mobile-web-app-title" content="CRT Megrine"/>
-  <meta name="mobile-web-app-capable" content="yes"/>
-  <link rel="manifest" th:href="@{/manifest.json}"/>
-  <link rel="apple-touch-icon" th:href="@{/icons/icon-apple.png}"/>
-  <title>CRT Megrine — Connexion</title>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,700;1,400&display=swap" rel="stylesheet"/>
+<head><meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="theme-color" content="#080810"/>
+  <title>CRT Mégrine — Connexion</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" th:href="@{/css/main.css}"/>
 </head>
 <body>
-<div class="login-wrap">
-  <div class="login-art">
-    <div class="login-art::before"></div>
-    <div style="position:relative;z-index:1;">
-      <div class="login-logo-big">
-        <img th:src="@{/images/logo-crt.png}" alt="CRT"/>
-      </div>
-      <div class="login-art-title">Croissant-Rouge<br/>Tunisien</div>
-      <p class="login-art-sub">Plateforme de gestion de la delegation de Megrine — benevoles, familles, dons et stocks humanitaires.</p>
+<div class="login-page">
+  <div class="login-card">
+    <div class="login-logo">
+      <img th:src="@{/images/logo-crt.png}" alt="CRT"/>
     </div>
-  </div>
-  <div class="login-panel">
-    <div class="login-form-wrap">
-      <h2 class="login-heading">Connexion</h2>
-      <p class="login-sub">Entrez vos identifiants pour acceder au systeme.</p>
+    <div class="login-title">Croissant-Rouge Tunisien</div>
+    <div class="login-sub">Délégation de Mégrine — Espace de gestion</div>
 
-      <div th:if="${error}" class="flash flash-err" style="margin-bottom:20px;">
-        <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-        <span th:text="${error}">Erreur</span>
-      </div>
-      <div th:if="${message}" class="flash flash-ok" style="margin-bottom:20px;">
-        <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
-        <span th:text="${message}">Message</span>
-      </div>
+    <div th:if="${param.error}" class="flash flash-err">❌ Identifiants incorrects. Réessayez.</div>
+    <div th:if="${param.logout}" class="flash flash-ok">✓ Déconnecté avec succès.</div>
 
-      <form method="post" action="/login">
-        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-        <div class="login-fgroup">
-          <label class="flabel">Nom d'utilisateur</label>
-          <input type="text" name="username" class="finput" placeholder="admin" autocomplete="username" required/>
-        </div>
-        <div class="login-fgroup">
-          <label class="flabel">Mot de passe</label>
-          <input type="password" name="password" class="finput" placeholder="••••••••" autocomplete="current-password" required/>
-        </div>
-        <button type="submit" class="btn btn-primary login-btn">
-          Se connecter
-          <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-        </button>
-      </form>
+    <form th:action="@{/login}" method="post" style="display:flex;flex-direction:column;gap:14px;">
+      <div class="form-group">
+        <label>Nom d'utilisateur</label>
+        <input type="text" name="username" class="finput" placeholder="admin" required autofocus/>
+      </div>
+      <div class="form-group">
+        <label>Mot de passe</label>
+        <input type="password" name="password" class="finput" placeholder="••••••••" required/>
+      </div>
+      <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+      <button type="submit" class="btn btn-primary" style="width:100%;margin-top:4px;min-height:46px;font-size:14px;">
+        Se connecter →
+      </button>
+    </form>
 
-      <div style="text-align:center;margin-top:16px;padding-top:16px;border-top:1px solid var(--gray-2);">
-        <span style="font-size:13px;color:var(--gray-4);">Pas encore de compte ? </span>
-        <a href="/register" style="font-size:13px;font-weight:700;color:var(--red);text-decoration:none;">Rejoindre CRT &rarr;</a>
-      </div>
-      <div class="login-demo">
-        <strong>admin</strong> / admin123 &nbsp;·&nbsp; <strong>user</strong> / user123
-      </div>
-
-      <!-- Bouton installer PWA -->
-      <div id="pwaInstall" style="display:none;margin-top:20px;text-align:center;">
-        <button onclick="installPWA()" style="display:inline-flex;align-items:center;gap:8px;padding:10px 20px;border:1.5px solid var(--red);border-radius:10px;background:var(--red-pale);color:var(--red);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">
-          &#128247; Installer l'application
-        </button>
-        <div style="font-size:11px;color:var(--gray-4);margin-top:6px;">Acceder directement depuis votre ecran d'accueil</div>
-      </div>
+    <div style="text-align:center;margin-top:20px;padding-top:16px;border-top:1px solid rgba(255,255,255,0.06);">
+      <a href="/register" style="font-size:12px;color:var(--text-3);text-decoration:none;transition:var(--transition);">
+        Pas encore de compte ? <span style="color:var(--red-2);font-weight:600;">Demander l'accès</span>
+      </a>
     </div>
   </div>
 </div>
-
-<script>
-// PWA
-if('serviceWorker' in navigator){
-  navigator.serviceWorker.register('/sw.js');
-}
-let deferredPrompt;
-window.addEventListener('beforeinstallprompt', (e) => {
-  e.preventDefault();
-  deferredPrompt = e;
-  document.getElementById('pwaInstall').style.display = 'block';
-});
-function installPWA() {
-  if(deferredPrompt){
-    deferredPrompt.prompt();
-    deferredPrompt.userChoice.then(() => {
-      deferredPrompt = null;
-      document.getElementById('pwaInstall').style.display = 'none';
-    });
-  }
-}
-</script>
 </body>
 </html>

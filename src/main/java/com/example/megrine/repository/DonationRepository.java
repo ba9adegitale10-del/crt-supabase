@@ -6,7 +6,9 @@ import org.springframework.data.jpa.repository.Query;
 import java.math.BigDecimal;
 
 public interface DonationRepository extends JpaRepository<Donation, Long> {
-    @Query("SELECT COALESCE(SUM(d.amount), 0) FROM Donation d WHERE d.type = 'MONETARY'")
+
+    // nativeQuery=true pour eviter les problemes JPQL avec les enums
+    @Query(value = "SELECT COALESCE(SUM(amount), 0) FROM donations WHERE type = 'MONETARY'",
+           nativeQuery = true)
     BigDecimal sumMonetaryDonations();
-    long count();
 }

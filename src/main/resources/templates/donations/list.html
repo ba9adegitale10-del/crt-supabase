@@ -1,57 +1,48 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head><meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
-  <meta name="theme-color" content="#CC1A1A"/>
-  <meta name="apple-mobile-web-app-capable" content="yes"/>
-  <meta name="apple-mobile-web-app-title" content="CRT Megrine"/>
-  <link rel="manifest" href="/manifest.json"/>
-  <link rel="apple-touch-icon" href="/icons/icon-apple.png"/>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,700;1,400&display=swap" rel="stylesheet"/>
+<head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" th:href="@{/css/main.css}"/>
 </head>
 <body>
-<div th:replace="~{fragments/layout :: layout(~{::section#pg},'Dons &amp; Aides','donations')}">
+<div th:replace="~{fragments/layout :: layout(~{::section#pg},'Dons & Aides','donations')}">
 <section id="pg">
   <div th:if="${success}" class="flash flash-ok">✓ <span th:text="${success}"></span></div>
   <div class="ph">
     <div>
       <h2 class="ph-title">Dons &amp; Aides</h2>
-      <p class="ph-sub">Total collecté : <strong style="color:var(--green);" th:text="${totalAmount!=null?totalAmount.setScale(0)+' TND':'0 TND'}">0</strong></p>
+      <p class="ph-sub">Total monétaire : <strong style="color:var(--green);" th:text="${totalAmount!=null?totalAmount.setScale(0)+' TND':'0 TND'}">0 TND</strong></p>
     </div>
     <a href="/donations/new" class="btn btn-primary">+ Enregistrer un don</a>
   </div>
-  <div class="card">
+  <div class="card" style="overflow-x:auto;">
     <table class="tbl">
       <thead><tr><th>Donateur</th><th>Type</th><th>Montant / Description</th><th>Date</th><th>Statut</th><th>Actions</th></tr></thead>
       <tbody>
-        <tr th:if="${donations.empty}">
+        <tr th:if="${donations==null or donations.empty}">
           <td colspan="6"><div class="empty"><div class="empty-ico">❤️</div><div class="empty-title">Aucun don enregistré</div></div></td>
         </tr>
         <tr th:each="d : ${donations}">
-          <td>
-            <div class="cell-name" th:text="${d.donorName?:'Anonyme'}">Donateur</div>
-            <div class="cell-sub" th:text="${d.donorEmail?:d.donorPhone?:'—'}">contact</div>
-          </td>
+          <td><div class="cell-name" th:text="${d.donorName?:'Anonyme'}">Donateur</div><div class="cell-sub" th:text="${d.donorEmail?:d.donorPhone?:'—'}">contact</div></td>
           <td>
             <span class="badge"
-              th:classappend="${d.type.name()=='MONETARY'}?'b-green':(${d.type.name()=='MEDICAL'}?'b-red':'b-amber')"
-              th:text="${d.type}">TYPE</span>
+              th:classappend="${d.type.name()=='MONETARY'}?'b-green':(${d.type.name()=='FOOD'}?'b-amber':(${d.type.name()=='MEDICAL'}?'b-red':'b-blue'))"
+              th:text="${d.type.name()=='MONETARY'?'💰 Monétaire':(d.type.name()=='FOOD'?'🥫 Alimentaire':(d.type.name()=='MEDICAL'?'💊 Médical':(d.type.name()=='CLOTHES'?'👕 Vêtements':'Autre')))}">TYPE</span>
           </td>
           <td>
-            <span th:if="${d.type.name()=='MONETARY'}" style="font-family:'Playfair Display',serif;font-size:16px;" th:text="${d.amount}+' TND'">0</span>
-            <span th:if="${d.type.name()!='MONETARY'}" style="font-size:13px;color:var(--ink-50);" th:text="${d.description?:'—'}">Desc</span>
+            <span th:if="${d.type.name()=='MONETARY'}" style="font-family:'Syne',sans-serif;font-size:16px;font-weight:700;color:var(--green);" th:text="${d.amount}+' TND'">0</span>
+            <span th:if="${d.type.name()!='MONETARY'}" style="font-size:13px;color:var(--text-2);" th:text="${d.description?:'—'}">Desc</span>
           </td>
-          <td style="color:var(--ink-50);font-size:13px;" th:text="${d.donationDate!=null?#temporals.format(d.donationDate,'dd/MM/yyyy'):'—'}">Date</td>
+          <td style="color:var(--text-3);font-size:13px;" th:text="${d.donationDate!=null?#temporals.format(d.donationDate,'dd/MM/yyyy'):'—'}">Date</td>
           <td>
             <span class="badge"
               th:classappend="${d.status.name()=='RECEIVED'}?'b-green':(${d.status.name()=='PENDING'}?'b-amber':'b-blue')"
-              th:text="${d.status.name()=='RECEIVED'?'Reçu':d.status.name()=='PENDING'?'En attente':'Distribué'}">S</span>
+              th:text="${d.status.name()=='RECEIVED'?'Reçu':(d.status.name()=='PENDING'?'En attente':'Distribué')}">S</span>
           </td>
           <td>
             <div class="actions">
               <a th:href="@{/donations/edit/{id}(id=${d.id})}" class="btn btn-secondary btn-sm btn-icon">✏️</a>
-              <a th:href="@{/donations/delete/{id}(id=${d.id})}" class="btn btn-danger btn-sm btn-icon" onclick="return confirm('Supprimer ce don ?')">🗑️</a>
+              <a th:href="@{/donations/delete/{id}(id=${d.id})}" class="btn btn-danger btn-sm btn-icon" onclick="return confirm('Supprimer ?')">🗑️</a>
             </div>
           </td>
         </tr>
