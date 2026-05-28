@@ -22,8 +22,24 @@ public class UserController {
     @Autowired private ActivityLogService logService;
 
     @GetMapping
-    public String list(Model model) {
-        model.addAttribute("users", userRepo.findAll());
+    public String list(@RequestParam(required = false) String perm, Model model) {
+        try {
+            List<User> users = userRepo.findAll();
+            // Filtrer par permission si demande
+            if (perm != null && !perm.isBlank()) {
+                users = users.stream()
+                    .filter(u -> u.getRole().equals("ROLE_ADMIN") ||
+                                 u.getPermissions() == null ||
+                                 u.getPermissions().isBlank() ||
+                                 u.getPermissions().contains(perm))
+                    .collect(Collectors.toList());
+                model.addAttribute("filterPerm", perm);
+            }
+            model.addAttribute("users", users);
+        } catch (Exception e) {
+            model.addAttribute("users", java.util.Collections.emptyList());
+            model.addAttribute("error", "Erreur lors du chargement des utilisateurs.");
+        }
         return "users/list";
     }
 
@@ -37,7 +53,6 @@ public class UserController {
     public String edit(@PathVariable Long id, Model model) {
         User user = userRepo.findById(id).orElseThrow();
         model.addAttribute("user", user);
-        // Convertir permissions CSV en liste
         List<String> perms = user.getPermissions() != null && !user.getPermissions().isBlank()
             ? List.of(user.getPermissions().split(","))
             : List.of();
@@ -72,32 +87,26 @@ public class UserController {
             return "redirect:/users/new";
         }
 
-        // Sauvegarder les permissions (CSV)
         if (role.equals("ROLE_ADMIN")) {
-            user.setPermissions(""); // Admin = tout
+            user.setPermissions("");
         } else if (permissions != null && !permissions.isEmpty()) {
             String permsStr = permissions.stream()
                 .filter(p -> List.of("VOLUNTEERS","FAMILIES","DONATIONS",
                                      "STOCK","EVENTS","TRAINING","MEMBER").contains(p))
-                .distinct()
-                .collect(Collectors.joining(","));
+                .distinct().collect(Collectors.joining(","));
             user.setPermissions(permsStr);
         } else {
-            user.setPermissions(""); // Vide = acces complet selon role
+            user.setPermissions("");
         }
 
         userRepo.save(user);
+        String action = isNew ? "Creation" : "Modification";
+        logService.log(action + " compte: " + username,
+            isNew ? ActivityLog.ActionType.CREATE : ActivityLog.ActionType.UPDATE,
+            "Utilisateur", username,
+            "Role: " + role + " | Permissions: " + (user.getPermissions().isBlank() ? "Toutes" : user.getPermissions()));
 
-        String details = "Role: " + role + " | Permissions: " +
-            (user.getPermissions().isBlank() ? "Toutes" : user.getPermissions()) +
-            " | Email: " + email;
-
-        if (isNew) logService.log("Creation compte: " + username,
-            ActivityLog.ActionType.CREATE, "Utilisateur", username, details);
-        else logService.log("Modification compte: " + username,
-            ActivityLog.ActionType.UPDATE, "Utilisateur", username, details);
-
-        ra.addFlashAttribute("success", "Utilisateur enregistre !");
+        ra.addFlashAttribute("success", "Utilisateur " + (isNew ? "créé" : "modifié") + " !");
         return "redirect:/users";
     }
 
@@ -105,11 +114,13 @@ public class UserController {
     public String delete(@PathVariable Long id, RedirectAttributes ra) {
         try {
             User u = userRepo.findById(id).orElseThrow();
-            String uname = u.getUsername();
+            if ("admin".equals(u.getUsername())) {
+                ra.addFlashAttribute("error", "Impossible de supprimer le compte admin principal.");
+                return "redirect:/users";
+            }
             userRepo.deleteById(id);
-            logService.log("Suppression compte: " + uname,
-                ActivityLog.ActionType.DELETE, "Utilisateur", uname, "Role: " + u.getRole());
-            ra.addFlashAttribute("success", "Utilisateur supprime.");
+            logService.logDelete("Utilisateur", u.getUsername());
+            ra.addFlashAttribute("success", "Utilisateur supprimé.");
         } catch (Exception e) {
             ra.addFlashAttribute("error", "Impossible de supprimer.");
         }
@@ -122,17 +133,15 @@ public class UserController {
             User user = userRepo.findById(id).orElseThrow();
             user.setEnabled(!user.isEnabled());
             userRepo.save(user);
-            logService.log((user.isEnabled()?"Activation":"Desactivation") + " compte: " + user.getUsername(),
-                ActivityLog.ActionType.UPDATE, "Utilisateur", user.getUsername(),
-                "Compte " + (user.isEnabled()?"active":"desactive"));
-            ra.addFlashAttribute("success", user.isEnabled() ? "Compte active." : "Compte desactive.");
+            logService.log((user.isEnabled()?"Activation":"Désactivation") + " compte: " + user.getUsername(),
+                ActivityLog.ActionType.UPDATE, "Utilisateur", user.getUsername(), null);
+            ra.addFlashAttribute("success", user.isEnabled() ? "Compte activé." : "Compte désactivé.");
         } catch (Exception e) {
             ra.addFlashAttribute("error", "Erreur.");
         }
         return "redirect:/users";
     }
 
-    // Gestion permissions rapide depuis dashboard admin
     @PostMapping("/permissions/{id}")
     public String updatePermissions(
             @PathVariable Long id,
@@ -141,23 +150,18 @@ public class UserController {
         try {
             User user = userRepo.findById(id).orElseThrow();
             if (user.getRole().equals("ROLE_ADMIN")) {
-                ra.addFlashAttribute("error", "Les admins ont toujours un acces complet.");
+                ra.addFlashAttribute("error", "Les admins ont toujours un accès complet.");
                 return "redirect:/users";
             }
-            String permsStr = "";
-            if (permissions != null && !permissions.isEmpty()) {
-                permsStr = permissions.stream()
+            String permsStr = permissions != null
+                ? permissions.stream()
                     .filter(p -> List.of("VOLUNTEERS","FAMILIES","DONATIONS",
                                          "STOCK","EVENTS","TRAINING","MEMBER").contains(p))
-                    .distinct()
-                    .collect(Collectors.joining(","));
-            }
+                    .distinct().collect(Collectors.joining(","))
+                : "";
             user.setPermissions(permsStr);
             userRepo.save(user);
-            logService.log("Permissions modifiees: " + user.getUsername(),
-                ActivityLog.ActionType.UPDATE, "Utilisateur", user.getUsername(),
-                "Nouvelles permissions: " + (permsStr.isBlank() ? "Toutes" : permsStr));
-            ra.addFlashAttribute("success", "Permissions mises a jour pour " + user.getUsername());
+            ra.addFlashAttribute("success", "Permissions mises à jour pour " + user.getUsername());
         } catch (Exception e) {
             ra.addFlashAttribute("error", "Erreur.");
         }
